@@ -21,7 +21,7 @@ draw tree drawPoint drawLine = collage 500 500 [ngon 5 50
 prelim : Int -> Tree a -> Tree ((a, Int))
 prelim siblingDistance tree = prelimInternal siblingDistance tree |> fst
 
-prelimInternal : Int -> Tree a -> (Tree (a, Int), Contours)
+prelimInternal : Int -> Tree a -> (Tree (a, Int), Contour)
 prelimInternal siblingDistance (Tree nodeVal children) = let
 
     -- Traverse each of the child trees, getting the positioned child tree as
@@ -42,20 +42,51 @@ prelimInternal siblingDistance (Tree nodeVal children) = let
                               (List.zip (visitedChildren, childOffsets))
 
     -- Construct the contour description of the current subtree
-    parentCountour = calculateContour subtreeOffsets childContours
+    parentContour = buildContour subtreeOffsets childContours
   in
     (Tree (nodeVal, 0) offsetChildren, parentContour)
 
 
+{-| Calculate how far each subtree should be offset from the left bound of the
+    first (leftmost) subtree. Each subtree needs to be positioned so that it's
+    `siblingDistance` away from its neighbors.
+-}
 calculateSubtreeOffsets : Int -> List Contour-> List Int
-calculateSubtreeOffsets siblingDistance contours = 
+calculateSubtreeOffsets siblingDistance contours =
+  List.map (uncurry pairwiseOffset)
+           (overlappingPairs contours)
 
+pairwiseOffset : Contour -> Contour -> Int
+pairwiseOffset lContour rContour = let
+    levelDistances = List.map2 (\ (_, lTo) (rFrom, _) -> lTo - lFrom)
+                     lContour
+                     rContour
+  in
+    case List.maximum levelDistances of
+      Just maximum -> maximum
+      Nothing -> 0
+
+{-|
+-}
+buildContour : 
+
+
+{-| Create a list that contains a tuple for each pair of adjacent elements in
+    the original list.
+
+    overlappingPairs [1, 2, 3, 4] == [(1, 2), (2, 3), (3, 4)]
+-}
+overlappingPairs : List a -> List (a, a)
+overlappingPairs list = case List.tail list of
+  Just tail -> List.map2 (\ a b -> (a, b)) list tail
+  Nothing -> []
+
+
+{-| Set the offset value of the root node of the given tree.
+-}
 setOffset : Tree (a, Int) -> Int -> Tree (a, Int)
 setOffset (Tree (v, _) children) offset = Tree (v, offset) children
 
-overlappingPairs : List a -> List (a, a)
-overlappingPairs List a::b::rest = (a, b)::(overlappingPairs b::rest)
-overlappingPairs otherwise 
 
 main : Element
 main = draw (Tree 123 [])
