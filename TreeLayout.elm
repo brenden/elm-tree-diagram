@@ -68,7 +68,19 @@ pairwiseOffset lContour rContour = let
 
 {-|
 -}
-buildContour : 
+buildContour : ()
+
+
+{-| Create a tuple containing the first and last elements in a list
+
+    ends [1, 2, 3, 4] == (1, 4)
+-}
+ends : List a -> Maybe (a, a)
+ends list = let
+    first = List.head list
+    last = List.head <| List.reverse list
+  in
+    Maybe.map2 (\ a b -> (a, b)) first last
 
 
 {-| Create a list that contains a tuple for each pair of adjacent elements in
