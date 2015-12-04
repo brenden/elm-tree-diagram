@@ -26,25 +26,33 @@ prelimInternal siblingDistance (Tree nodeVal children) = let
 
     -- Traverse each of the child trees, getting the positioned child tree as
     -- well as a description of its contours
-    (visitedChildren, childContours) =
-      List.map (prelimInternal siblingDistance)
-               children |> List.unzip
+    visited = List.map (prelimInternal siblingDistance) children
+    (childTrees, childContours) = List.unzip visited
 
     -- Calculate the position of the left bound of each subtree, relative to
-    -- the leftmost subtree
+    -- the left bound of the current tree
     subtreeOffsets = calculateSubtreeOffsets siblingDistance childContours
 
-    -- Calculate the position of each child node, relative to its parent
-    childOffsets = calculateChildOffsets subtreeOffsets childContours
-
-    -- Store the offsets in the child nodes
-    offsetChildren = List.map (uncurry setOffset)
-                              (List.zip (visitedChildren, childOffsets))
-
-    -- Construct the contour description of the current subtree
-    parentContour = buildContour subtreeOffsets childContours
+    -- Store the offset for each subtree in the root node of the subtree
+    offsetChildren = List.map (uncurry setSubtreeOffset)
+                              (List.zip (childTrees, childOffsets))
   in
-    (Tree (nodeVal, 0) offsetChildren, parentContour)
+    case ends visited of
+      Just ((lSubtree, lSubtreeContour), (rSubtree, rSubtreeContour)) ->
+        let
+          -- Calculate the position of the root, relative to the left bound of
+          -- the current tree
+          rootOffset = calculateRootOffset lSubtree rSubtree
+
+          -- Construct the contour description of the current subtree
+          parentContour = buildContour lSubtreeContour
+                                       rSubtreeContour
+                                       getSubtreeOffset <| rSubtree
+                                       rootOffset
+        in
+          (Tree (nodeVal, 0) offsetChildren, parentContour)
+      Nothing ->
+        (Tree (nodeVal, 0) offsetChildren, parentContour)
 
 
 {-| Calculate how far each subtree should be offset from the left bound of the
@@ -66,9 +74,16 @@ pairwiseOffset lContour rContour = let
       Just maximum -> maximum
       Nothing -> 0
 
+
 {-|
 -}
-buildContour : ()
+calculateRootOffset : Tree -> Tree -> Int
+
+
+{-|
+-}
+buildContour : Contour -> Contour -> Int -> Int -> Contour
+buildContour lContour rContour rContourOffset rootOffest = let
 
 
 {-| Create a tuple containing the first and last elements in a list
@@ -82,6 +97,13 @@ ends list = let
   in
     Maybe.map2 (\ a b -> (a, b)) first last
 
+
+{-| Get the last element from a list
+
+    last [2, 4, 8] == 8
+-}
+last : List a -> a
+last = List.head << List.reverse
 
 {-| Create a list that contains a tuple for each pair of adjacent elements in
     the original list.
