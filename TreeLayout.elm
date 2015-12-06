@@ -1,5 +1,6 @@
-module TreeLayout (draw, main) where
+module TreeLayout (draw, prelim, Tree(Tree), main) where
 
+import Debug
 import Color exposing (..)
 import Graphics.Collage exposing (..)
 import Graphics.Element exposing (..)
@@ -18,10 +19,10 @@ draw : Tree a -> PointDrawer a -> LineDrawer -> Element
 draw tree drawPoint drawLine = collage 500 500 [ngon 5 50
   |> filled (rgb 100 100 100)]
 
---layout : Int -> Int -> Tree a -> Tree (Coord, a)
+--layout : Int -> Int -> Tree a -> Tree (a, Coord)
 --layout prelimLayout >> finalLayout <|
 
-prelim : Int -> Tree a -> Tree ((a, PrelimPosition))
+prelim : Int -> Tree a -> Tree (a, PrelimPosition)
 prelim siblingDistance tree = prelimInternal siblingDistance tree |> fst
 
 prelimInternal : Int -> Tree a -> (Tree (a, PrelimPosition), Contour)
@@ -43,7 +44,7 @@ prelimInternal siblingDistance (Tree val children) = let
       subtrees
       offsets
   in
-    case ends visited of
+    case ends <| List.map2 (,) updatedChildren childContours of
 
       -- The root of the current tree has children.
       Just ((lSubtree, lSubtreeContour), (rSubtree, rSubtreeContour)) ->
@@ -90,10 +91,12 @@ rootOffset lPrelimPosition rPrelimPosition =
     first (leftmost) subtree. Each subtree needs to be positioned so that it is
     exactly `siblingDistance` away from its neighbors.
 -}
-subtreeOffsets : Int -> List Contour-> List Int
-subtreeOffsets siblingDistance contours =
-  List.map (uncurry <| pairwiseSubtreeOffset siblingDistance)
-           (overlappingPairs contours)
+subtreeOffsets : Int -> List Contour -> List Int
+subtreeOffsets siblingDistance contours = let
+    relOffsets = Debug.log "relOffsets:" (List.map (uncurry <| pairwiseSubtreeOffset siblingDistance)
+                          (overlappingPairs contours))
+  in
+    List.scanl (+) 0 relOffsets
 
 
 {-| Given two contours, calculate the offset of the second from the left bound
