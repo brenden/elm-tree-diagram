@@ -1,7 +1,6 @@
-module TreeLayout (draw, prelim, final, Tree(Tree)) where
+module TreeLayout (draw, layout, Tree(Tree)) where
 
 import Debug
-import Color exposing (..)
 import Graphics.Collage exposing (..)
 import Graphics.Element exposing (..)
 
@@ -16,40 +15,29 @@ type alias PrelimPosition = {
   rootOffset: Int }
 
 draw : Int -> Int -> PointDrawer a -> LineDrawer -> Tree a -> Element
-draw siblingDistance parentHeight drawPoint drawLine tree =
-    collage 500 500 (drawInternal siblingDistance
-                                  parentHeight
-                                  drawPoint
-                                  drawLine
-                                  layout <| tree)
+draw siblingDistance levelHeight drawPoint drawLine tree =
+  collage 1000 1000 (drawInternal drawPoint
+                                drawLine
+                                (layout siblingDistance
+                                        levelHeight
+                                        tree))
 
 
-drawInternal : Int
-            -> Int
-            -> PointDrawer a
-            -> LineDrawer
-            -> Tree (a, Coord)
-            -> List Form
-drawInternal siblingDistance
-             parentHeight
-             drawPoint
-             drawLine
-             (Tree (v, coord) subtrees) =
-  let subtreePositions = List.map (\ (Tree (_, position) _) -> position)
-                                  subtrees
-      rootDrawing = drawPoint v
-      edgeDrawings = List.map (drawLine coord) subtreePositions
+drawInternal : PointDrawer a -> LineDrawer -> Tree (a, Coord) -> List Form
+drawInternal drawPoint drawLine (Tree (v, coord) subtrees) = let
+    subtreePositions = List.map (\ (Tree (_, position) _) -> position) subtrees
+    rootDrawing = drawPoint v
+      |> move (toFloat <| fst coord, toFloat <| snd coord)
+    edgeDrawings = List.map (drawLine coord) subtreePositions
   in
-      List.append (rootDrawing::edgeDrawings)
-                  (List.concatMap (drawInternal siblingDistance
-                                                parentHeight
-                                                drawPoint
-                                                drawLine)
-                                  subtrees)
+    List.append (rootDrawing::edgeDrawings)
+                (List.concatMap (drawInternal drawPoint drawLine)
+                                subtrees)
 
 
 layout : Int -> Int -> Tree a -> Tree (a, Coord)
-layout prelimLayout >> finalLayout <|
+layout siblingDistance levelHeight tree =
+  final 0 levelHeight 0 (prelim siblingDistance tree)
 
 
 final : Int -> Int -> Int -> Tree (a, PrelimPosition) -> Tree (a, Coord)
