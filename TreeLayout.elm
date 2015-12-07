@@ -6,7 +6,7 @@ import Graphics.Element exposing (..)
 
 type Tree a = Tree a (List (Tree a))
 
-type alias Coord = (Int, Int)
+type alias Coord = (Float, Float)
 type alias Contour = List (Int, Int)
 type alias PointDrawer a = a -> Form
 type alias LineDrawer = Coord -> Coord -> Form
@@ -26,8 +26,7 @@ draw siblingDistance levelHeight drawPoint drawLine tree =
 drawInternal : PointDrawer a -> LineDrawer -> Tree (a, Coord) -> List Form
 drawInternal drawPoint drawLine (Tree (v, coord) subtrees) = let
     subtreePositions = List.map (\ (Tree (_, position) _) -> position) subtrees
-    rootDrawing = drawPoint v
-      |> move (toFloat <| fst coord, toFloat <| snd coord)
+    rootDrawing = drawPoint v |> move coord
     edgeDrawings = List.map (drawLine coord) subtreePositions
   in
     List.append (rootDrawing::edgeDrawings)
@@ -42,7 +41,8 @@ layout siblingDistance levelHeight tree =
 
 final : Int -> Int -> Int -> Tree (a, PrelimPosition) -> Tree (a, Coord)
 final level levelHeight lOffset (Tree (v, prelimPosition) subtrees) = let
-    finalPosition = (lOffset + prelimPosition.rootOffset, level * levelHeight)
+    finalPosition = (toFloat (lOffset + prelimPosition.rootOffset),
+                     toFloat (-level * levelHeight))
     subtreePrelimPositions = List.map
       (\ (Tree (_, prelimPosition) _) -> prelimPosition)
       subtrees
@@ -85,25 +85,24 @@ prelimInternal siblingDistance (Tree val children) = let
       -- The root of the current tree has children.
       Just ((lSubtree, lSubtreeContour), (rSubtree, rSubtreeContour)) ->
         let
-          (Tree (_, lPrelimPosition) _) = lSubtree
-          (Tree (_, rPrelimPosition) _) = rSubtree
+          (Tree (_, lPrelimPos) _) = lSubtree
+          (Tree (_, rPrelimPos) _) = rSubtree
 
           -- Calculate the position of the root, relative to the left bound of
           -- the current tree. Store this in the preliminary position for the
           -- current tree.
-          prelimPosition = {
+          prelimPos = {
             subtreeOffset = 0,
-            rootOffset = rootOffset lPrelimPosition rPrelimPosition
+            rootOffset = rootOffset lPrelimPos rPrelimPos
           }
 
           -- Construct the contour description of the current tree.
-          currentTreeContour = buildContour lSubtreeContour
-                                            rSubtreeContour
-                                            rPrelimPosition.subtreeOffset
-                                            prelimPosition.rootOffset
+          rootContour = (prelimPos.rootOffset, prelimPos.rootOffset)
+          treeContour = rootContour::(buildContour lSubtreeContour
+                                                   rSubtreeContour
+                                                   rPrelimPos.subtreeOffset)
         in
-          (Tree (val, prelimPosition) updatedChildren,
-            currentTreeContour)
+          (Tree (val, prelimPos) updatedChildren, treeContour)
 
       -- The root of the current tree is a leaf node.
       Nothing ->
@@ -128,12 +127,26 @@ rootOffset lPrelimPosition rPrelimPosition =
     exactly `siblingDistance` away from its neighbors.
 -}
 subtreeOffsets : Int -> List Contour -> List Int
-subtreeOffsets siblingDistance contours = let
-    relOffsets = Debug.log "relOffsets:" (List.map (uncurry <| pairwiseSubtreeOffset siblingDistance)
-                          (overlappingPairs contours))
+subtreeOffsets siblingDistance contours = case List.head contours of
+  Just c0 -> let
+    coolList = List.scanl
+        (\ c (aggContour, runningOffset) -> let
+            offset = pairwiseSubtreeOffset siblingDistance aggContour c
+          in
+            (buildContour aggContour c offset, offset))
+        (c0, 0)
+        (List.drop 1 contours)
+    in
+      List.map (\ (_, runningOffset) -> runningOffset) coolList
+  Nothing -> []
+
+{-
+  let
+    relOffsets = List.map (uncurry <| pairwiseSubtreeOffset siblingDistance)
+                          (overlappingPairs contours)
   in
     List.scanl (+) 0 relOffsets
-
+-}
 
 {-| Given two contours, calculate the offset of the second from the left bound
     of the first such that the two are separated by exactly `siblingDistance`.
@@ -153,12 +166,19 @@ pairwiseSubtreeOffset siblingDistance lContour rContour = let
     contours of the leftmost and rightmost subtrees, and then adding the root
     at the top of the new contour.
 -}
-buildContour : Contour -> Contour -> Int -> Int -> Contour
-buildContour lContour rContour rContourOffset rootOffset = let
+buildContour : Contour -> Contour -> Int -> Contour
+buildContour lContour rContour rContourOffset = let
+    lLength = List.length lContour
+    rLength = List.length rContour
     combinedContour = List.map2 (\ (lFrom, lTo) (rFrom, rTo) ->
       (lFrom, rTo + rContourOffset)) lContour rContour
   in
-    (rootOffset, rootOffset)::combinedContour
+    if lLength > rLength then
+      List.append combinedContour (List.drop rLength lContour)
+    else
+      List.append combinedContour (List.map
+        (\ (from, to) -> (from + rContourOffset, to + rContourOffset))
+        (List.drop lLength rContour))
 
 
 {-| Create a tuple containing the first and last elements in a list
