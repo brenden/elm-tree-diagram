@@ -1,4 +1,4 @@
-module TreeLayout (draw, prelim, Tree(Tree), main) where
+module TreeLayout (draw, prelim, final, Tree(Tree)) where
 
 import Debug
 import Color exposing (..)
@@ -9,21 +9,69 @@ type Tree a = Tree a (List (Tree a))
 
 type alias Coord = (Int, Int)
 type alias Contour = List (Int, Int)
-type alias PointDrawer a = (a -> Form)
-type alias LineDrawer = (Coord -> Coord -> Form)
+type alias PointDrawer a = a -> Form
+type alias LineDrawer = Coord -> Coord -> Form
 type alias PrelimPosition = {
   subtreeOffset: Int,
   rootOffset: Int }
 
-draw : Tree a -> PointDrawer a -> LineDrawer -> Element
-draw tree drawPoint drawLine = collage 500 500 [ngon 5 50
-  |> filled (rgb 100 100 100)]
+draw : Int -> Int -> PointDrawer a -> LineDrawer -> Tree a -> Element
+draw siblingDistance parentHeight drawPoint drawLine tree =
+    collage 500 500 (drawInternal siblingDistance
+                                  parentHeight
+                                  drawPoint
+                                  drawLine
+                                  layout <| tree)
 
---layout : Int -> Int -> Tree a -> Tree (a, Coord)
---layout prelimLayout >> finalLayout <|
+
+drawInternal : Int
+            -> Int
+            -> PointDrawer a
+            -> LineDrawer
+            -> Tree (a, Coord)
+            -> List Form
+drawInternal siblingDistance
+             parentHeight
+             drawPoint
+             drawLine
+             (Tree (v, coord) subtrees) =
+  let subtreePositions = List.map (\ (Tree (_, position) _) -> position)
+                                  subtrees
+      rootDrawing = drawPoint v
+      edgeDrawings = List.map (drawLine coord) subtreePositions
+  in
+      List.append (rootDrawing::edgeDrawings)
+                  (List.concatMap (drawInternal siblingDistance
+                                                parentHeight
+                                                drawPoint
+                                                drawLine)
+                                  subtrees)
+
+
+layout : Int -> Int -> Tree a -> Tree (a, Coord)
+layout prelimLayout >> finalLayout <|
+
+
+final : Int -> Int -> Int -> Tree (a, PrelimPosition) -> Tree (a, Coord)
+final level levelHeight lOffset (Tree (v, prelimPosition) subtrees) = let
+    finalPosition = (lOffset + prelimPosition.rootOffset, level * levelHeight)
+    subtreePrelimPositions = List.map
+      (\ (Tree (_, prelimPosition) _) -> prelimPosition)
+      subtrees
+    visited = List.map2
+      (\ prelimPos subtree -> final (level + 1)
+                                    levelHeight
+                                    (lOffset + prelimPos.subtreeOffset)
+                                    subtree)
+      subtreePrelimPositions
+      subtrees
+  in
+    Tree (v, finalPosition) visited
+
 
 prelim : Int -> Tree a -> Tree (a, PrelimPosition)
 prelim siblingDistance tree = prelimInternal siblingDistance tree |> fst
+
 
 prelimInternal : Int -> Tree a -> (Tree (a, PrelimPosition), Contour)
 prelimInternal siblingDistance (Tree val children) = let
@@ -144,11 +192,5 @@ ends list = let
 -}
 overlappingPairs : List a -> List (a, a)
 overlappingPairs list = case List.tail list of
-  Just tail -> List.map2 (\ a b -> (a, b)) list tail
+  Just tail -> List.map2 (,) list tail
   Nothing -> []
-
-
-main : Element
-main = draw (Tree 123 [])
-            (\x -> show x |> toForm)
-            (\c1 c2 -> show (c1, c2) |> toForm)
