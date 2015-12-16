@@ -15,14 +15,19 @@ type alias PrelimPosition = {
   rootOffset: Int }
 
 
-draw : Int -> Int -> PointDrawer a -> LineDrawer -> Tree a -> Element
-draw siblingDistance levelHeight drawPoint drawLine tree =
+draw : Int -> Int -> Int -> PointDrawer a -> LineDrawer -> Tree a -> Element
+draw siblingDistance levelHeight padding drawPoint drawLine tree =
   let
-    (positionedTree, (width, height)) = layout siblingDistance levelHeight tree
+    (positionedTree, (width, height)) = layout siblingDistance
+                                               levelHeight
+                                               padding
+                                               tree
   in
-    collage width height (drawInternal drawPoint
-                                       drawLine
-                                       positionedTree)
+    collage (width + 2 * padding)
+            (height + 2 * padding)
+            (drawInternal drawPoint
+                          drawLine
+                          positionedTree)
 
 
 drawInternal : PointDrawer a -> LineDrawer -> Tree (a, Coord) -> List Form
@@ -31,17 +36,18 @@ drawInternal drawPoint drawLine (Tree (v, coord) subtrees) = let
     rootDrawing = drawPoint v |> move coord
     edgeDrawings = List.map (drawLine coord) subtreePositions
   in
-    List.append (rootDrawing::edgeDrawings)
+    List.append (List.append edgeDrawings [rootDrawing])
                 (List.concatMap (drawInternal drawPoint drawLine)
                                 subtrees)
 
 
-layout : Int -> Int -> Tree a -> (Tree (a, Coord), (Int, Int))
-layout siblingDistance levelHeight tree = let
+layout : Int -> Int -> Int -> Tree a -> (Tree (a, Coord), (Int, Int))
+layout siblingDistance levelHeight padding tree = let
     (prelimTree, contour) = prelim siblingDistance tree
     treeWidth = Maybe.withDefault 0 <| List.maximum <| snd (List.unzip contour)
     treeHeight = List.length contour * levelHeight
-    shiftTree = (toFloat treeWidth / 2, toFloat -treeHeight / 2)
+    shiftTree = (toFloat -(treeWidth + padding) / 2,
+      toFloat (treeHeight + padding) / 2)
     finalTree = final 0 levelHeight 0 shiftTree prelimTree
   in
     (finalTree, (treeWidth, treeHeight))

@@ -1,6 +1,9 @@
 import Color exposing (..)
 import Graphics.Collage exposing (..)
 import Graphics.Element exposing (..)
+import String
+import Text
+
 import TreeLayout exposing (draw, Tree(..))
 
 main : Element
@@ -36,7 +39,14 @@ main = let
                    ]
                  ]
                ]
-    drawLine from to = segment from to |> traced (solid (rgb 100 0 0))
-    drawPoint n = show 0 |> toForm
   in
-    draw 30 60 drawPoint drawLine coolTree
+    draw 60 120 40 drawPoint drawLine coolTree
+
+medGray = rgb 100 100 100
+white = rgb 255 255 25
+
+drawLine from to = segment from to |> traced (solid medGray)
+drawPoint n = group [circle 16 |> filled medGray,
+  text <| Text.color white <| intToText n]
+
+intToText n = toString n |> Text.fromString
