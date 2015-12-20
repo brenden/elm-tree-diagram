@@ -1,6 +1,5 @@
 module TreeLayout (draw, layout, Tree(Tree)) where
 
-import Debug
 import Graphics.Collage exposing (..)
 import Graphics.Element exposing (..)
 
@@ -15,6 +14,12 @@ type alias PrelimPosition = {
   rootOffset: Int }
 
 
+{-| Public function for drawing a tree.
+    In addition to a few positioning parameters, this function takes a tree, a
+    line drawing function, and a node drawing function. It determines the layout
+    for the tree and uses the provided drawing functions to create a visual
+    represntation of the tree.
+-}
 draw : Int -> Int -> Int -> PointDrawer a -> LineDrawer -> Tree a -> Element
 draw siblingDistance levelHeight padding drawPoint drawLine tree =
   let
@@ -30,6 +35,8 @@ draw siblingDistance levelHeight padding drawPoint drawLine tree =
                           positionedTree)
 
 
+{-| Helper function for recursively drawing the tree.
+-}
 drawInternal : PointDrawer a -> LineDrawer -> Tree (a, Coord) -> List Form
 drawInternal drawPoint drawLine (Tree (v, coord) subtrees) = let
     subtreePositions = List.map (\ (Tree (_, position) _) -> position) subtrees
@@ -41,6 +48,10 @@ drawInternal drawPoint drawLine (Tree (v, coord) subtrees) = let
                                 subtrees)
 
 
+{-| Public function for assigning the positions of a tree's nodes.
+    The value returned by this function is a tuple of the positioned tree, and
+    the dimensions the tree occupied by the positioned tree.
+-}
 layout : Int -> Int -> Int -> Tree a -> (Tree (a, Coord), (Int, Int))
 layout siblingDistance levelHeight padding tree = let
     (prelimTree, contour) = prelim siblingDistance tree
@@ -53,6 +64,21 @@ layout siblingDistance levelHeight padding tree = let
     (finalTree, (treeWidth, treeHeight))
 
 
+{-| Public function for drawing a tree, given an already-positioned tree.
+    This function will probably be used in conjunction with `layout`. It is
+    useful in situations where you want to make some ad-hoc changes to the node
+    positions assigned by the layout function prior to drawing the tree, or you
+    want to embelish the tree with some extra drawings prior to proceeding with
+    the normal drawing process.
+-}
+-- TODO drawPositioned
+
+
+{-| Assign the final position of each node within the the input tree. The final
+    positions are found by performing a preorder traversal of the tree and
+    summing up the relative positions of each node's ancestors as the traversal
+    moves down the tree.
+-}
 final : Int
      -> Int
      -> Int
@@ -84,6 +110,12 @@ final level
     Tree (v, finalPosition) visited
 
 
+{-| Assign the preliminary position of each node within the input tree. The
+    preliminary positions are found by performing a postorder traversal on the
+    tree and aligning each subtree relative to its parent. Sibling subtrees are
+    pushed together as close to each other as possible, and parent nodes are
+    positioned so that they're centered over their children.
+-}
 prelim : Int -> Tree a -> (Tree (a, PrelimPosition), Contour)
 prelim siblingDistance (Tree val children) = let
 
@@ -152,24 +184,17 @@ rootOffset lPrelimPosition rPrelimPosition =
 subtreeOffsets : Int -> List Contour -> List Int
 subtreeOffsets siblingDistance contours = case List.head contours of
   Just c0 -> let
-    coolList = List.scanl
-        (\ c (aggContour, runningOffset) -> let
-            offset = pairwiseSubtreeOffset siblingDistance aggContour c
-          in
-            (buildContour aggContour c offset, offset))
-        (c0, 0)
-        (List.drop 1 contours)
+    cumulativeContours = List.scanl
+      (\ c (aggContour, _) -> let
+          offset = pairwiseSubtreeOffset siblingDistance aggContour c
+        in
+          (buildContour aggContour c offset, offset))
+      (c0, 0)
+      (List.drop 1 contours)
     in
-      List.map (\ (_, runningOffset) -> runningOffset) coolList
+      List.map (\ (_, runningOffset) -> runningOffset) cumulativeContours
   Nothing -> []
 
-{-
-  let
-    relOffsets = List.map (uncurry <| pairwiseSubtreeOffset siblingDistance)
-                          (overlappingPairs contours)
-  in
-    List.scanl (+) 0 relOffsets
--}
 
 {-| Given two contours, calculate the offset of the second from the left bound
     of the first such that the two are separated by exactly `siblingDistance`.
@@ -177,8 +202,8 @@ subtreeOffsets siblingDistance contours = case List.head contours of
 pairwiseSubtreeOffset : Int -> Contour -> Contour -> Int
 pairwiseSubtreeOffset siblingDistance lContour rContour = let
     levelDistances = List.map2 (\ (_, lTo) (rFrom, _) -> lTo - rFrom)
-                     lContour
-                     rContour
+                               lContour
+                               rContour
   in
     case List.maximum levelDistances of
       Just separatingDistance -> separatingDistance + siblingDistance
