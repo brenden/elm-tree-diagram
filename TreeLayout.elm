@@ -210,7 +210,7 @@ pairwiseSubtreeOffset siblingDistance lContour rContour = let
       Nothing -> 0
 
 
-{-| Construct a contour for a ree. This is done by combining together the
+{-| Construct a contour for a tree. This is done by combining together the
     contours of the leftmost and rightmost subtrees, and then adding the root
     at the top of the new contour.
 -}
@@ -239,14 +239,3 @@ ends list = let
     last = List.head <| List.reverse list
   in
     Maybe.map2 (\ a b -> (a, b)) first last
-
-
-{-| Create a list that contains a tuple for each pair of adjacent elements in
-    the original list.
-
-    overlappingPairs [1, 2, 3, 4] == [(1, 2), (2, 3), (3, 4)]
--}
-overlappingPairs : List a -> List (a, a)
-overlappingPairs list = case List.tail list of
-  Just tail -> List.map2 (,) list tail
-  Nothing -> []
