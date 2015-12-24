@@ -23,25 +23,24 @@ type alias PrelimPosition = {
 draw : Int -> Int -> Int -> PointDrawer a -> LineDrawer -> Tree a -> Element
 draw siblingDistance levelHeight padding drawPoint drawLine tree =
   let
-    (positionedTree, (width, height)) = layout siblingDistance
-                                               levelHeight
-                                               padding
-                                               tree
+    positionedTree = layout siblingDistance levelHeight tree
   in
-    collage (width + 2 * padding)
-            (height + 2 * padding)
-            (drawInternal drawPoint
-                          drawLine
-                          positionedTree)
+    drawPositioned padding drawPoint drawLine positionedTree
 
 
 {-| Helper function for recursively drawing the tree.
 -}
-drawInternal : PointDrawer a -> LineDrawer -> Tree (a, Coord) -> List Form
-drawInternal drawPoint drawLine (Tree (v, coord) subtrees) = let
+drawInternal : Int
+            -> PointDrawer a
+            -> LineDrawer
+            -> Tree (a, Coord)
+            -> List Form
+drawInternal padding drawPoint drawLine (Tree (v, (coordX, coordY)) subtrees) =
+  let
+    paddedCoord = (coordX + toFloat padding, coordY + toFloat padding)
     subtreePositions = List.map (\ (Tree (_, position) _) -> position) subtrees
-    rootDrawing = drawPoint v |> move coord
-    edgeDrawings = List.map (drawLine coord) subtreePositions
+    rootDrawing = drawPoint v |> move paddedCoord
+    edgeDrawings = List.map (drawLine paddedCoord) subtreePositions
   in
     List.append (List.append edgeDrawings [rootDrawing])
                 (List.concatMap (drawInternal drawPoint drawLine)
@@ -52,26 +51,42 @@ drawInternal drawPoint drawLine (Tree (v, coord) subtrees) = let
     The value returned by this function is a tuple of the positioned tree, and
     the dimensions the tree occupied by the positioned tree.
 -}
-layout : Int -> Int -> Int -> Tree a -> (Tree (a, Coord), (Int, Int))
-layout siblingDistance levelHeight padding tree = let
-    (prelimTree, contour) = prelim siblingDistance tree
-    treeWidth = Maybe.withDefault 0 <| List.maximum <| snd (List.unzip contour)
-    treeHeight = List.length contour * levelHeight
-    shiftTree = (toFloat -(treeWidth + padding) / 2,
-      toFloat (treeHeight + padding) / 2)
-    finalTree = final 0 levelHeight 0 shiftTree prelimTree
+layout : Int -> Int -> Tree a -> Tree (a, Coord)
+layout siblingDistance levelHeight tree = let
+    (prelimTree, _) = prelim siblingDistance tree
   in
-    (finalTree, (treeWidth, treeHeight))
+    final 0 levelHeight 0 prelimTree
 
 
-{-| Public function for drawing a tree, given an already-positioned tree.
+{-| Public function for drawing an already-positioned tree.
     This function will probably be used in conjunction with `layout`. It is
     useful in situations where you want to make some ad-hoc changes to the node
     positions assigned by the layout function prior to drawing the tree, or you
     want to embelish the tree with some extra drawings prior to proceeding with
     the normal drawing process.
 -}
--- TODO drawPositioned
+drawPositioned : Int
+              -> PointDrawer a
+              -> LineDrawer
+              -> Tree (a, Coord)
+              -> Element
+drawPositioned padding drawPoint drawLine positionedTree = let
+    (width, height) = treeBoundingBox positionedTree
+  in
+    collage (width + 2 * padding)
+            (height + 2 * padding)
+            (drawInternal padding
+                          drawPoint
+                          drawLine
+                          positionedTree)
+
+
+treeBoundingBox : Tree (a, Coord) -> (Int, Int)
+treeBoundingBox (Tree (_, (x, y)) subtrees) = let
+    extrema = List.map treeBoundingBoxHelper subtrees
+    (maxXs, maxYs) = List.unzip extrema
+  in
+    (List.max maxXs, List.max maxYs)
 
 
 {-| Assign the final position of each node within the the input tree. The final
@@ -82,17 +97,15 @@ layout siblingDistance levelHeight padding tree = let
 final : Int
      -> Int
      -> Int
-     -> Coord
      -> Tree (a, PrelimPosition)
      -> Tree (a, Coord)
 final level
       levelHeight
       lOffset
-      (hShift, vShift)
       (Tree (v, prelimPosition) subtrees) =
   let
-    finalPosition = (hShift + toFloat (lOffset + prelimPosition.rootOffset),
-                     vShift + toFloat (-level * levelHeight))
+    finalPosition = (toFloat (lOffset + prelimPosition.rootOffset),
+                     toFloat (-level * levelHeight))
 
     -- Preorder recursal into child trees
     subtreePrelimPositions = List.map
@@ -102,7 +115,6 @@ final level
       (\ prelimPos subtree -> final (level + 1)
                                     levelHeight
                                     (lOffset + prelimPos.subtreeOffset)
-                                    (hShift, vShift)
                                     subtree)
       subtreePrelimPositions
       subtrees
