@@ -1,4 +1,4 @@
-module TreeLayout (draw, layout, Tree(Tree)) where
+module TreeLayout (draw, position, drawPositioned, Tree(Tree)) where
 
 import Debug
 import Graphics.Collage exposing (..)
@@ -18,16 +18,62 @@ type alias PrelimPosition = {
 
 {-| Public function for drawing a tree.
     In addition to a few positioning parameters, this function takes a tree, a
-    line drawing function, and a node drawing function. It determines the layout
-    for the tree and uses the provided drawing functions to create a visual
-    represntation of the tree.
+    line drawing function, and a node drawing function. It determines the
+    layout for the tree and uses the provided drawing functions to create a
+    visual represntation of the tree.
 -}
 draw : Int -> Int -> Int -> PointDrawer a -> LineDrawer -> Tree a -> Element
 draw siblingDistance levelHeight padding drawPoint drawLine tree =
   let
-    positionedTree = layout siblingDistance levelHeight tree
+    positionedTree = position siblingDistance levelHeight tree
   in
     drawPositioned padding drawPoint drawLine positionedTree
+
+
+{-| Public function for assigning the positions of a tree's nodes.
+    The value returned by this function is a tuple of the positioned tree, and
+    the dimensions the tree occupied by the positioned tree.
+-}
+position : Int -> Int -> Tree a -> Tree (a, Coord)
+position siblingDistance levelHeight tree = let
+    (prelimTree, _) = prelim siblingDistance tree
+  in
+    final 0 levelHeight 0 prelimTree
+
+
+{-| Public function for drawing an already-positioned tree.
+    This function will probably be used in conjunction with `position`. It is
+    useful in situations where you want to make some ad-hoc changes to the node
+    positions assigned by the position function prior to drawing the tree, or
+    you want to embelish the tree with some extra drawings prior to proceeding
+    with the normal drawing process.
+-}
+drawPositioned : Int
+              -> PointDrawer a
+              -> LineDrawer
+              -> Tree (a, Coord)
+              -> Element
+drawPositioned padding drawPoint drawLine positionedTree = let
+    (width, height) = treeBoundingBox positionedTree
+    coordTransform = (\ (x, y) -> (x - width / 2, -y + height / 2))
+  in
+    collage (round width + 2 * padding)
+            (round height + 2 * padding)
+            (drawInternal coordTransform
+                          drawPoint
+                          drawLine
+                          positionedTree)
+
+
+{-| Finds the smallest box that fits around the given positioned tree
+-}
+treeBoundingBox : Tree (a, Coord) -> (Float, Float)
+treeBoundingBox (Tree (_, (x, y)) subtrees) = let
+    extrema = List.map treeBoundingBox subtrees
+    (maxXs, maxYs) = List.unzip extrema
+  in
+    (Maybe.withDefault x <| List.maximum maxXs,
+      Maybe.withDefault y <| List.maximum maxYs)
 
 
 {-| Helper function for recursively drawing the tree.
@@ -53,52 +99,6 @@ drawInternal transformCoord
                                               drawPoint
                                               drawLine)
                                 subtrees)
-
-
-{-| Public function for assigning the positions of a tree's nodes.
-    The value returned by this function is a tuple of the positioned tree, and
-    the dimensions the tree occupied by the positioned tree.
--}
-layout : Int -> Int -> Tree a -> Tree (a, Coord)
-layout siblingDistance levelHeight tree = let
-    (prelimTree, _) = prelim siblingDistance tree
-  in
-    final 0 levelHeight 0 prelimTree
-
-
-{-| Public function for drawing an already-positioned tree.
-    This function will probably be used in conjunction with `layout`. It is
-    useful in situations where you want to make some ad-hoc changes to the node
-    positions assigned by the layout function prior to drawing the tree, or you
-    want to embelish the tree with some extra drawings prior to proceeding with
-    the normal drawing process.
--}
-drawPositioned : Int
-              -> PointDrawer a
-              -> LineDrawer
-              -> Tree (a, Coord)
-              -> Element
-drawPositioned padding drawPoint drawLine positionedTree = let
-    (width, height) = Debug.log "bounding box:" <| treeBoundingBox positionedTree
-    coordTransform = (\ (x, y) -> (x - width / 2, -y + height / 2))
-  in
-    collage (round width + 2 * padding)
-            (round height + 2 * padding)
-            (drawInternal coordTransform
-                          drawPoint
-                          drawLine
-                          positionedTree)
-
-
-{-| Finds the smallest box that fits around the given positioned tree
--}
-treeBoundingBox : Tree (a, Coord) -> (Float, Float)
-treeBoundingBox (Tree (_, (x, y)) subtrees) = let
-    extrema = List.map treeBoundingBox subtrees
-    (maxXs, maxYs) = List.unzip extrema
-  in
-    (Maybe.withDefault x <| List.maximum maxXs,
-      Maybe.withDefault y <| List.maximum maxYs)
 
 
 {-| Assign the final position of each node within the the input tree. The final
