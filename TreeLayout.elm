@@ -1,5 +1,6 @@
 module TreeLayout (draw, layout, Tree(Tree)) where
 
+import Debug
 import Graphics.Collage exposing (..)
 import Graphics.Element exposing (..)
 
@@ -9,6 +10,7 @@ type alias Coord = (Float, Float)
 type alias Contour = List (Int, Int)
 type alias PointDrawer a = a -> Form
 type alias LineDrawer = Coord -> Coord -> Form
+type alias CoordTransform = Coord -> Coord
 type alias PrelimPosition = {
   subtreeOffset: Int,
   rootOffset: Int }
@@ -31,19 +33,30 @@ draw siblingDistance levelHeight padding drawPoint drawLine tree =
 {-| Helper function for recursively drawing the tree.
 -}
 drawInternal : Int
+            -> CoordTransform
             -> PointDrawer a
             -> LineDrawer
             -> Tree (a, Coord)
             -> List Form
-drawInternal padding drawPoint drawLine (Tree (v, (coordX, coordY)) subtrees) =
+drawInternal padding
+             transformCoord
+             drawPoint
+             drawLine
+             (Tree (v, coord) subtrees) =
   let
-    paddedCoord = (coordX + toFloat padding, coordY + toFloat padding)
-    subtreePositions = List.map (\ (Tree (_, position) _) -> position) subtrees
+    (transformedX, transformedY) = transformCoord coord
+    paddedCoord = (transformedX + toFloat padding,
+                   transformedY + toFloat padding)
+    subtreePositions = List.map (\ (Tree (_, coord) _) -> transformCoord coord)
+                                subtrees
     rootDrawing = drawPoint v |> move paddedCoord
     edgeDrawings = List.map (drawLine paddedCoord) subtreePositions
   in
     List.append (List.append edgeDrawings [rootDrawing])
-                (List.concatMap (drawInternal drawPoint drawLine)
+                (List.concatMap (drawInternal padding
+                                              transformCoord
+                                              drawPoint
+                                              drawLine)
                                 subtrees)
 
 
@@ -71,22 +84,27 @@ drawPositioned : Int
               -> Tree (a, Coord)
               -> Element
 drawPositioned padding drawPoint drawLine positionedTree = let
-    (width, height) = treeBoundingBox positionedTree
+    (width, height) = Debug.log "bounding box:" <| treeBoundingBox positionedTree
+    coordTransform = (\ (x, y) -> (x - width / 2, -y + height / 2))
   in
-    collage (width + 2 * padding)
-            (height + 2 * padding)
-            (drawInternal padding
+    collage (round width + 2 * padding)
+            (round height + 2 * padding)
+            (drawInternal 0 --TODO
+                          coordTransform
                           drawPoint
                           drawLine
                           positionedTree)
 
 
-treeBoundingBox : Tree (a, Coord) -> (Int, Int)
+{-| Finds the smallest box that fits around the given positioned tree
+-}
+treeBoundingBox : Tree (a, Coord) -> (Float, Float)
 treeBoundingBox (Tree (_, (x, y)) subtrees) = let
-    extrema = List.map treeBoundingBoxHelper subtrees
+    extrema = List.map treeBoundingBox subtrees
     (maxXs, maxYs) = List.unzip extrema
   in
-    (List.max maxXs, List.max maxYs)
+    (Maybe.withDefault x <| List.maximum maxXs,
+      Maybe.withDefault y <| List.maximum maxYs)
 
 
 {-| Assign the final position of each node within the the input tree. The final
@@ -105,7 +123,7 @@ final level
       (Tree (v, prelimPosition) subtrees) =
   let
     finalPosition = (toFloat (lOffset + prelimPosition.rootOffset),
-                     toFloat (-level * levelHeight))
+                     toFloat (level * levelHeight))
 
     -- Preorder recursal into child trees
     subtreePrelimPositions = List.map
