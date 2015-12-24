@@ -32,29 +32,24 @@ draw siblingDistance levelHeight padding drawPoint drawLine tree =
 
 {-| Helper function for recursively drawing the tree.
 -}
-drawInternal : Int
-            -> CoordTransform
+drawInternal : CoordTransform
             -> PointDrawer a
             -> LineDrawer
             -> Tree (a, Coord)
             -> List Form
-drawInternal padding
-             transformCoord
+drawInternal transformCoord
              drawPoint
              drawLine
              (Tree (v, coord) subtrees) =
   let
-    (transformedX, transformedY) = transformCoord coord
-    paddedCoord = (transformedX + toFloat padding,
-                   transformedY + toFloat padding)
+    transformedCoord = transformCoord coord
     subtreePositions = List.map (\ (Tree (_, coord) _) -> transformCoord coord)
                                 subtrees
-    rootDrawing = drawPoint v |> move paddedCoord
-    edgeDrawings = List.map (drawLine paddedCoord) subtreePositions
+    rootDrawing = drawPoint v |> move transformedCoord
+    edgeDrawings = List.map (drawLine transformedCoord) subtreePositions
   in
     List.append (List.append edgeDrawings [rootDrawing])
-                (List.concatMap (drawInternal padding
-                                              transformCoord
+                (List.concatMap (drawInternal transformCoord
                                               drawPoint
                                               drawLine)
                                 subtrees)
@@ -89,8 +84,7 @@ drawPositioned padding drawPoint drawLine positionedTree = let
   in
     collage (round width + 2 * padding)
             (round height + 2 * padding)
-            (drawInternal 0 --TODO
-                          coordTransform
+            (drawInternal coordTransform
                           drawPoint
                           drawLine
                           positionedTree)
