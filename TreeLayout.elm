@@ -51,17 +51,13 @@ position siblingDistance levelHeight layout tree = let
     (prelimTree, _) = prelim siblingDistance tree
     finalTree = final 0 levelHeight 0 prelimTree
     (width, height) = treeBoundingBox finalTree
-    transform = case layout of
-      LeftToRight -> (\ (x, y) -> (-y, x))
-      RightToLeft -> (\ (x, y) -> (y, x))
-      TopToBottom -> (\ (x, y) -> (x, -y))
-      BottomToTop -> Basics.identity
-    centeredTransform = (\ (v, coord) -> let
-        (tx, ty) = transform coord
-      in
-        (v, (tx - width / 2, ty + height / 2)))
+    transform = (\ (x, y) -> case layout of
+      LeftToRight -> (y - height / 2, x - width / 2)
+      RightToLeft -> (-y + height / 2, x - width / 2)
+      BottomToTop -> (x - width / 2, y - height / 2)
+      TopToBottom -> (x - width / 2, -y + height / 2))
   in
-    treeMap centeredTransform finalTree
+    treeMap (\ (v, coord) -> (v, transform coord)) finalTree
 
 
 {-| Public function for drawing an already-positioned tree.
