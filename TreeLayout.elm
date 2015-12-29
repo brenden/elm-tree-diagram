@@ -1,10 +1,15 @@
-module TreeLayout (draw, position, drawPositioned, Tree(Tree)) where
+module TreeLayout (
+  draw,
+  position,
+  drawPositioned,
+  Tree(Tree),
+  TreeLayout(LeftToRight, RightToLeft, TopToBottom, BottomToTop)) where
 
-import Debug
 import Graphics.Collage exposing (..)
 import Graphics.Element exposing (..)
 
 type Tree a = Tree a (List (Tree a))
+type TreeLayout = LeftToRight | RightToLeft | TopToBottom | BottomToTop
 
 type alias Coord = (Float, Float)
 type alias Contour = List (Int, Int)
@@ -22,10 +27,17 @@ type alias PrelimPosition = {
     layout for the tree and uses the provided drawing functions to create a
     visual represntation of the tree.
 -}
-draw : Int -> Int -> Int -> PointDrawer a -> LineDrawer -> Tree a -> Element
-draw siblingDistance levelHeight padding drawPoint drawLine tree =
+draw : Int
+    -> Int
+    -> TreeLayout
+    -> Int
+    -> PointDrawer a
+    -> LineDrawer
+    -> Tree a
+    -> Element
+draw siblingDistance levelHeight layout padding drawPoint drawLine tree =
   let
-    positionedTree = position siblingDistance levelHeight tree
+    positionedTree = position siblingDistance levelHeight layout tree
   in
     drawPositioned padding drawPoint drawLine positionedTree
 
@@ -34,11 +46,22 @@ draw siblingDistance levelHeight padding drawPoint drawLine tree =
     The value returned by this function is a tuple of the positioned tree, and
     the dimensions the tree occupied by the positioned tree.
 -}
-position : Int -> Int -> Tree a -> Tree (a, Coord)
-position siblingDistance levelHeight tree = let
+position : Int -> Int -> TreeLayout -> Tree a -> Tree (a, Coord)
+position siblingDistance levelHeight layout tree = let
     (prelimTree, _) = prelim siblingDistance tree
+    finalTree = final 0 levelHeight 0 prelimTree
+    (width, height) = treeBoundingBox finalTree
+    transform = case layout of
+      LeftToRight -> (\ (x, y) -> (-y, x))
+      RightToLeft -> (\ (x, y) -> (y, x))
+      TopToBottom -> (\ (x, y) -> (x, -y))
+      BottomToTop -> Basics.identity
+    centeredTransform = (\ (v, coord) -> let
+        (tx, ty) = transform coord
+      in
+        (v, (tx - width / 2, ty + height / 2)))
   in
-    final 0 levelHeight 0 prelimTree
+    treeMap centeredTransform finalTree
 
 
 {-| Public function for drawing an already-positioned tree.
@@ -55,50 +78,55 @@ drawPositioned : Int
               -> Element
 drawPositioned padding drawPoint drawLine positionedTree = let
     (width, height) = treeBoundingBox positionedTree
-    coordTransform = (\ (x, y) -> (x - width / 2, -y + height / 2))
   in
     collage (round width + 2 * padding)
             (round height + 2 * padding)
-            (drawInternal coordTransform
-                          drawPoint
+            (drawInternal drawPoint
                           drawLine
                           positionedTree)
 
 
-{-| Finds the smallest box that fits around the given positioned tree
+{-| Finds the smallest box that fits around the positioned tree
 -}
 treeBoundingBox : Tree (a, Coord) -> (Float, Float)
-treeBoundingBox (Tree (_, (x, y)) subtrees) = let
-    extrema = List.map treeBoundingBox subtrees
-    (maxXs, maxYs) = List.unzip extrema
+treeBoundingBox tree = let
+    ((minX, maxX), (minY, maxY)) = treeExtrema tree
   in
-    (Maybe.withDefault x <| List.maximum maxXs,
-      Maybe.withDefault y <| List.maximum maxYs)
+    (maxX - minX, maxY - minY)
+
+
+{-| Find the min and max X and Y coordinates in the positioned tree
+-}
+treeExtrema : Tree (a, Coord) -> ((Float, Float), (Float, Float))
+treeExtrema (Tree (_, (x, y)) subtrees) = let
+    extrema = List.map treeExtrema subtrees
+    (xExtrema, yExtrema) = List.unzip extrema
+    (minXs, maxXs) = List.unzip xExtrema
+    (minYs, maxYs) = List.unzip yExtrema
+    minX = min x <| Maybe.withDefault x <| List.minimum minXs
+    maxX = max x <| Maybe.withDefault x <| List.maximum maxXs
+    minY = min y <| Maybe.withDefault y <| List.minimum minYs
+    maxY = max y <| Maybe.withDefault y <| List.maximum maxYs
+  in
+    ((minX, maxX), (minY, maxY))
 
 
 {-| Helper function for recursively drawing the tree.
 -}
-drawInternal : CoordTransform
-            -> PointDrawer a
+drawInternal : PointDrawer a
             -> LineDrawer
             -> Tree (a, Coord)
             -> List Form
-drawInternal transformCoord
-             drawPoint
+drawInternal drawPoint
              drawLine
              (Tree (v, coord) subtrees) =
   let
-    transformedCoord = transformCoord coord
-    subtreePositions = List.map (\ (Tree (_, coord) _) -> transformCoord coord)
-                                subtrees
-    rootDrawing = drawPoint v |> move transformedCoord
-    edgeDrawings = List.map (drawLine transformedCoord) subtreePositions
+    subtreePositions = List.map (\ (Tree (_, coord) _) -> coord) subtrees
+    rootDrawing = drawPoint v |> move coord
+    edgeDrawings = List.map (drawLine coord) subtreePositions
   in
     List.append (List.append edgeDrawings [rootDrawing])
-                (List.concatMap (drawInternal transformCoord
-                                              drawPoint
-                                              drawLine)
-                                subtrees)
+                (List.concatMap (drawInternal drawPoint drawLine) subtrees)
 
 
 {-| Assign the final position of each node within the the input tree. The final
@@ -263,3 +291,7 @@ ends list = let
     last = List.head <| List.reverse list
   in
     Maybe.map2 (\ a b -> (a, b)) first last
+
+
+treeMap : (a -> a) -> Tree a -> Tree a
+treeMap fn (Tree v children) = Tree (fn v) (List.map (treeMap fn) children)

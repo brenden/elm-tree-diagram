@@ -4,7 +4,7 @@ import Graphics.Element exposing (..)
 import String
 import Text
 
-import TreeLayout exposing (draw, Tree(..))
+import TreeLayout exposing (draw, Tree(..), TreeLayout)
 
 main : Element
 main = let
@@ -40,7 +40,7 @@ main = let
                  ]
                ]
   in
-    draw 60 120 40 drawPoint drawLine coolTree
+    draw 60 120 TreeLayout.TopToBottom 80 drawPoint drawLine coolTree
 
 medGray = rgb 100 100 100
 white = rgb 255 255 25
