@@ -25,7 +25,7 @@ type alias PrelimPosition = {
     In addition to a few positioning parameters, this function takes a tree, a
     line drawing function, and a node drawing function. It determines the
     layout for the tree and uses the provided drawing functions to create a
-    visual represntation of the tree.
+    visual representation of the tree.
 -}
 draw : Int
     -> Int
