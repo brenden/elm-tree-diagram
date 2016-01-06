@@ -9,7 +9,7 @@ import TreeLayout exposing (draw, Tree(..), TreeLayout)
 
 -- Tree to draw
 westGermanicLanguages =
-  Tree "West Germanic Languages" [
+  Tree "West Germanic" [
     Tree "Ingvaeonic" [
       Tree "Old Saxon" [
         Tree "Middle Low German" [
@@ -54,24 +54,19 @@ drawLine : (Float, Float) -> (Float, Float) -> Form
 drawLine from to = segment from to |> traced (solid black)
 
 
-{-| Represent nodes as circles with the node value inside.
+{-| Represent nodes as white textboxes
 -}
 drawPoint : String -> Form
-drawPoint n = let
-    bubble = circle 16
-  in
-    group [
-      bubble |> filled white,
-      bubble |> outlined defaultLine,
-      Text.fromString n |> Text.color black |> text
-    ]
+drawPoint n =
+  Text.fromString n |> centered |> width 100 |> container 100 50 middle
+    |> color white |> toForm
 
 
 main : Element
 main = let
-    siblingDistance = 60
+    siblingDistance = 110
     levelHeight = 100
-    padding = 40
+    padding = 80
   in
     draw siblingDistance
          levelHeight
