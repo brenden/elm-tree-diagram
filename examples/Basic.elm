@@ -1,29 +1,10 @@
 import Color exposing (..)
 import Graphics.Collage exposing (..)
 import Graphics.Element exposing (..)
+import Text exposing (..)
 import String
-import Text
 
 import TreeLayout exposing (draw, Tree(..), TreeLayout)
-
-
-{-| Represent edges as straight lines
--}
-drawLine : (Float, Float) -> (Float, Float) -> Form
-drawLine from to = segment from to |> traced (solid black)
-
-
-{-| Represent nodes as circles with the node value inside
--}
-drawPoint : Int -> Form
-drawPoint n = let
-    bubble = circle 16
-  in
-    group [
-      bubble |> filled white,
-      bubble |> outlined defaultLine,
-      toString n |> Text.fromString |> Text.color black |> text
-    ]
 
 
 -- Tree to draw
@@ -55,6 +36,24 @@ coolTree =
     ]
   ]
 
+
+{-| Represent edges as straight lines.
+-}
+drawLine : (Float, Float) -> (Float, Float) -> Form
+drawLine from to = segment from to |> traced (solid black)
+
+
+{-| Represent nodes as circles with the node value inside.
+-}
+drawNode : Int -> Form
+drawNode n =
+  group [
+    circle 16 |> filled white,
+    circle 16 |> outlined defaultLine,
+    toString n |> fromString |> Text.color black |> text
+  ]
+
+
 main : Element
 main = let
     siblingDistance = 60
@@ -65,6 +64,6 @@ main = let
          levelHeight
          TreeLayout.TopToBottom
          padding
-         drawPoint
+         drawNode
          drawLine
          coolTree

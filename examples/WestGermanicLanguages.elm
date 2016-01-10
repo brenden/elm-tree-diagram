@@ -56,8 +56,8 @@ drawLine from to = segment from to |> traced (solid black)
 
 {-| Represent nodes as white textboxes
 -}
-drawPoint : String -> Form
-drawPoint n =
+drawNode : String -> Form
+drawNode n =
   Text.fromString n |> centered |> width 100 |> container 100 50 middle
     |> color white |> toForm
 
@@ -72,6 +72,6 @@ main = let
          levelHeight
          TreeLayout.TopToBottom
          padding
-         drawPoint
+         drawNode
          drawLine
          westGermanicLanguages
