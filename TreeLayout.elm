@@ -1,24 +1,38 @@
 module TreeLayout (
   draw,
-  position,
-  drawPositioned,
   Tree(Tree),
-  TreeLayout(LeftToRight, RightToLeft, TopToBottom, BottomToTop)) where
+  TreeOrientation(..),
+  defaultTreeLayout) where
 
 import Graphics.Collage exposing (..)
 import Graphics.Element exposing (..)
 
 type Tree a = Tree a (List (Tree a))
-type TreeLayout = LeftToRight | RightToLeft | TopToBottom | BottomToTop
+type TreeOrientation = LeftToRight | RightToLeft | TopToBottom | BottomToTop
 
 type alias Coord = (Float, Float)
 type alias Contour = List (Int, Int)
-type alias PointDrawer a = a -> Form
+type alias NodeDrawer a = a -> Form
 type alias LineDrawer = Coord -> Coord -> Form
 type alias CoordTransform = Coord -> Coord
 type alias PrelimPosition = {
-  subtreeOffset: Int,
-  rootOffset: Int }
+  subtreeOffset : Int,
+  rootOffset : Int }
+
+-- Options of laying out the tree
+type alias TreeLayout = {
+  orientation : TreeOrientation,
+  levelHeight : Int,
+  siblingDistance: Int,
+  subtreeDistance: Int,
+  padding : Int }
+
+defaultTreeLayout = {
+  orientation = TopToBottom,
+  levelHeight = 100,
+  siblingDistance = 60,
+  subtreeDistance = 80,
+  padding = 10 }
 
 
 {-| Public function for drawing a tree.
@@ -27,27 +41,24 @@ type alias PrelimPosition = {
     layout for the tree and uses the provided drawing functions to create a
     visual representation of the tree.
 -}
-draw : Int
-    -> Int
-    -> TreeLayout
-    -> Int
-    -> PointDrawer a
-    -> LineDrawer
-    -> Tree a
-    -> Element
-draw siblingDistance levelHeight layout padding drawPoint drawLine tree =
+draw : TreeLayout -> NodeDrawer a -> LineDrawer -> Tree a -> Element
+draw layout drawNode drawLine tree =
   let
-    positionedTree = position siblingDistance levelHeight layout tree
+    positionedTree = position layout.siblingDistance
+                              layout.subtreeDistance
+                              layout.levelHeight
+                              layout.orientation
+                              tree
   in
-    drawPositioned padding drawPoint drawLine positionedTree
+    drawPositioned layout.padding drawNode drawLine positionedTree
 
 
-{-| Public function for assigning the positions of a tree's nodes.
+{-| Function for assigning the positions of a tree's nodes.
     The value returned by this function is a tuple of the positioned tree, and
     the dimensions the tree occupied by the positioned tree.
 -}
-position : Int -> Int -> TreeLayout -> Tree a -> Tree (a, Coord)
-position siblingDistance levelHeight layout tree = let
+position : Int -> Int -> Int -> TreeOrientation -> Tree a -> Tree (a, Coord)
+position siblingDistance subtreeDistance levelHeight layout tree = let
     (prelimTree, _) = prelim siblingDistance tree
     finalTree = final 0 levelHeight 0 prelimTree
     (width, height) = treeBoundingBox finalTree
@@ -60,7 +71,7 @@ position siblingDistance levelHeight layout tree = let
     treeMap (\ (v, coord) -> (v, transform coord)) finalTree
 
 
-{-| Public function for drawing an already-positioned tree.
+{-| Function for drawing an already-positioned tree.
     This function will probably be used in conjunction with `position`. It is
     useful in situations where you want to make some ad-hoc changes to the node
     positions assigned by the position function prior to drawing the tree, or
@@ -68,16 +79,16 @@ position siblingDistance levelHeight layout tree = let
     with the normal drawing process.
 -}
 drawPositioned : Int
-              -> PointDrawer a
+              -> NodeDrawer a
               -> LineDrawer
               -> Tree (a, Coord)
               -> Element
-drawPositioned padding drawPoint drawLine positionedTree = let
+drawPositioned padding drawNode drawLine positionedTree = let
     (width, height) = treeBoundingBox positionedTree
   in
     collage (round width + 2 * padding)
             (round height + 2 * padding)
-            (drawInternal drawPoint
+            (drawInternal drawNode
                           drawLine
                           positionedTree)
 
@@ -109,20 +120,20 @@ treeExtrema (Tree (_, (x, y)) subtrees) = let
 
 {-| Helper function for recursively drawing the tree.
 -}
-drawInternal : PointDrawer a
+drawInternal : NodeDrawer a
             -> LineDrawer
             -> Tree (a, Coord)
             -> List Form
-drawInternal drawPoint
+drawInternal drawNode
              drawLine
              (Tree (v, coord) subtrees) =
   let
     subtreePositions = List.map (\ (Tree (_, coord) _) -> coord) subtrees
-    rootDrawing = drawPoint v |> move coord
+    rootDrawing = drawNode v |> move coord
     edgeDrawings = List.map (drawLine coord) subtreePositions
   in
     List.append (List.append edgeDrawings [rootDrawing])
-                (List.concatMap (drawInternal drawPoint drawLine) subtrees)
+                (List.concatMap (drawInternal drawNode drawLine) subtrees)
 
 
 {-| Assign the final position of each node within the the input tree. The final
