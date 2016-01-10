@@ -15,6 +15,7 @@ type alias Contour = List (Int, Int)
 type alias NodeDrawer a = a -> Form
 type alias LineDrawer = Coord -> Coord -> Form
 type alias CoordTransform = Coord -> Coord
+type alias PositionedTree a = Tree (a, Coord)
 type alias PrelimPosition = {
   subtreeOffset : Int,
   rootOffset : Int }
@@ -57,7 +58,7 @@ draw layout drawNode drawLine tree =
     The value returned by this function is a tuple of the positioned tree, and
     the dimensions the tree occupied by the positioned tree.
 -}
-position : Int -> Int -> Int -> TreeOrientation -> Tree a -> Tree (a, Coord)
+position : Int -> Int -> Int -> TreeOrientation -> Tree a -> PositionedTree a
 position siblingDistance subtreeDistance levelHeight layout tree = let
     (prelimTree, _) = prelim siblingDistance tree
     finalTree = final 0 levelHeight 0 prelimTree
@@ -81,7 +82,7 @@ position siblingDistance subtreeDistance levelHeight layout tree = let
 drawPositioned : Int
               -> NodeDrawer a
               -> LineDrawer
-              -> Tree (a, Coord)
+              -> PositionedTree a
               -> Element
 drawPositioned padding drawNode drawLine positionedTree = let
     (width, height) = treeBoundingBox positionedTree
@@ -95,7 +96,7 @@ drawPositioned padding drawNode drawLine positionedTree = let
 
 {-| Finds the smallest box that fits around the positioned tree
 -}
-treeBoundingBox : Tree (a, Coord) -> (Float, Float)
+treeBoundingBox : PositionedTree a -> (Float, Float)
 treeBoundingBox tree = let
     ((minX, maxX), (minY, maxY)) = treeExtrema tree
   in
@@ -104,7 +105,7 @@ treeBoundingBox tree = let
 
 {-| Find the min and max X and Y coordinates in the positioned tree
 -}
-treeExtrema : Tree (a, Coord) -> ((Float, Float), (Float, Float))
+treeExtrema : PositionedTree a -> ((Float, Float), (Float, Float))
 treeExtrema (Tree (_, (x, y)) subtrees) = let
     extrema = List.map treeExtrema subtrees
     (xExtrema, yExtrema) = List.unzip extrema
@@ -122,7 +123,7 @@ treeExtrema (Tree (_, (x, y)) subtrees) = let
 -}
 drawInternal : NodeDrawer a
             -> LineDrawer
-            -> Tree (a, Coord)
+            -> PositionedTree a
             -> List Form
 drawInternal drawNode
              drawLine
@@ -145,7 +146,7 @@ final : Int
      -> Int
      -> Int
      -> Tree (a, PrelimPosition)
-     -> Tree (a, Coord)
+     -> PositionedTree a
 final level
       levelHeight
       lOffset
