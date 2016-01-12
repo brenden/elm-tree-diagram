@@ -4,8 +4,7 @@ import Graphics.Element exposing (..)
 import String
 import Text
 
-import TreeLayout exposing (draw, Tree(..), TreeLayout)
-
+import TreeLayout exposing (draw, Tree(..), defaultTreeLayout)
 
 -- Tree to draw
 westGermanicLanguages =
@@ -63,15 +62,8 @@ drawNode n =
 
 
 main : Element
-main = let
-    siblingDistance = 110
-    levelHeight = 100
-    padding = 80
-  in
-    draw siblingDistance
-         levelHeight
-         TreeLayout.TopToBottom
-         padding
-         drawNode
-         drawLine
-         westGermanicLanguages
+main = draw { defaultTreeLayout | siblingDistance = 120,
+                                  padding = 80 }
+       drawNode
+       drawLine
+       westGermanicLanguages

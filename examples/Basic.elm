@@ -4,8 +4,7 @@ import Graphics.Element exposing (..)
 import Text exposing (..)
 import String
 
-import TreeLayout exposing (draw, Tree(..), TreeLayout)
-
+import TreeLayout exposing (draw, Tree(..), defaultTreeLayout)
 
 -- Tree to draw
 coolTree =
@@ -55,15 +54,4 @@ drawNode n =
 
 
 main : Element
-main = let
-    siblingDistance = 60
-    levelHeight = 100
-    padding = 40
-  in
-    draw siblingDistance
-         levelHeight
-         TreeLayout.TopToBottom
-         padding
-         drawNode
-         drawLine
-         coolTree
+main = draw defaultTreeLayout drawNode drawLine coolTree

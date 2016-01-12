@@ -3,7 +3,7 @@ import Graphics.Collage exposing (..)
 import Graphics.Element exposing (..)
 import Text exposing (..)
 
-import TreeLayout exposing (draw, Tree(..), TreeLayout)
+import TreeLayout exposing (draw, Tree(..), defaultTreeLayout)
 
 type Color = Red | Black
 
@@ -96,16 +96,9 @@ treeLineStyle = { defaultLine | width = 2 }
 arrow =
   polygon [(-1, 1), (1, 0), (-1, -1), (-0.5, 0)] |> filled black |> scale 10
 
+
 main : Element
-main = let
-    siblingDistance = 80
-    levelHeight = 100
-    padding = 40
-  in
-    draw siblingDistance
-         levelHeight
-         TreeLayout.TopToBottom
-         padding
-         drawNode
-         drawLine
-         redBlackTree
+main = draw { defaultTreeLayout | padding = 60, siblingDistance = 80 }
+            drawNode
+            drawLine
+            redBlackTree

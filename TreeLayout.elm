@@ -33,7 +33,7 @@ defaultTreeLayout = {
   levelHeight = 100,
   siblingDistance = 60,
   subtreeDistance = 80,
-  padding = 10 }
+  padding = 40 }
 
 
 {-| Public function for drawing a tree.
