@@ -24,14 +24,14 @@ type alias PrelimPosition = {
 type alias TreeLayout = {
   orientation : TreeOrientation,
   levelHeight : Int,
-  siblingDistance: Int,
+  leafDistance: Int,
   subtreeDistance: Int,
   padding : Int }
 
 defaultTreeLayout = {
   orientation = TopToBottom,
   levelHeight = 100,
-  siblingDistance = 60,
+  leafDistance = 50,
   subtreeDistance = 80,
   padding = 40 }
 
@@ -45,7 +45,7 @@ defaultTreeLayout = {
 draw : TreeLayout -> NodeDrawer a -> LineDrawer -> Tree a -> Element
 draw layout drawNode drawLine tree =
   let
-    positionedTree = position layout.siblingDistance
+    positionedTree = position layout.leafDistance
                               layout.subtreeDistance
                               layout.levelHeight
                               layout.orientation
@@ -59,8 +59,8 @@ draw layout drawNode drawLine tree =
     the dimensions the tree occupied by the positioned tree.
 -}
 position : Int -> Int -> Int -> TreeOrientation -> Tree a -> PositionedTree a
-position siblingDistance subtreeDistance levelHeight layout tree = let
-    (prelimTree, _) = prelim siblingDistance tree
+position leafDistance subtreeDistance levelHeight layout tree = let
+    (prelimTree, _) = prelim leafDistance subtreeDistance tree
     finalTree = final 0 levelHeight 0 prelimTree
     (width, height) = treeBoundingBox finalTree
     transform = (\ (x, y) -> case layout of
@@ -176,17 +176,17 @@ final level
     pushed together as close to each other as possible, and parent nodes are
     positioned so that they're centered over their children.
 -}
-prelim : Int -> Tree a -> (Tree (a, PrelimPosition), Contour)
-prelim siblingDistance (Tree val children) = let
+prelim : Int -> Int -> Tree a -> (Tree (a, PrelimPosition), Contour)
+prelim leafDistance subtreeDistance (Tree val children) = let
 
     -- Traverse each of the subtrees, getting the positioned subtree as well as
     -- a description of its contours.
-    visited = List.map (prelim siblingDistance) children
+    visited = List.map (prelim leafDistance subtreeDistance) children
     (subtrees, childContours) = List.unzip visited
 
     -- Calculate the position of the left bound of each subtree, relative to
     -- the left bound of the current tree.
-    offsets = subtreeOffsets siblingDistance childContours
+    offsets = subtreeOffsets leafDistance subtreeDistance childContours
 
     -- Store the offset for each of the subtrees.
     updatedChildren = List.map2
@@ -239,34 +239,45 @@ rootOffset lPrelimPosition rPrelimPosition =
 
 {-| Calculate how far each subtree should be offset from the left bound of the
     first (leftmost) subtree. Each subtree needs to be positioned so that it is
-    exactly `siblingDistance` away from its neighbors.
+    exactly `subtreeDistance` away from its neighbors.
 -}
-subtreeOffsets : Int -> List Contour -> List Int
-subtreeOffsets siblingDistance contours = case List.head contours of
-  Just c0 -> let
-    cumulativeContours = List.scanl
-      (\ c (aggContour, _) -> let
-          offset = pairwiseSubtreeOffset siblingDistance aggContour c
-        in
-          (buildContour aggContour c offset, offset))
-      (c0, 0)
-      (List.drop 1 contours)
-    in
-      List.map (\ (_, runningOffset) -> runningOffset) cumulativeContours
-  Nothing -> []
+subtreeOffsets : Int -> Int -> List Contour -> List Int
+subtreeOffsets leafDistance subtreeDistance contours =
+  case List.head contours of
+    Just c0 -> let
+      cumulativeContours = List.scanl
+        (\ c (aggContour, _) -> let
+            offset = pairwiseSubtreeOffset leafDistance
+                                           subtreeDistance
+                                           aggContour
+                                           c
+          in
+            (buildContour aggContour c offset, offset))
+        (c0, 0)
+        (List.drop 1 contours)
+      in
+        List.map (\ (_, runningOffset) -> runningOffset) cumulativeContours
+    Nothing -> []
 
 
 {-| Given two contours, calculate the offset of the second from the left bound
-    of the first such that the two are separated by exactly `siblingDistance`.
+    of the first such that the two are separated by exactly `minDistance`.
 -}
-pairwiseSubtreeOffset : Int -> Contour -> Contour -> Int
-pairwiseSubtreeOffset siblingDistance lContour rContour = let
+pairwiseSubtreeOffset : Int -> Int -> Contour -> Contour -> Int
+pairwiseSubtreeOffset leafDistance subtreeDistance lContour rContour = let
     levelDistances = List.map2 (\ (_, lTo) (rFrom, _) -> lTo - rFrom)
                                lContour
                                rContour
   in
     case List.maximum levelDistances of
-      Just separatingDistance -> separatingDistance + siblingDistance
+      Just separatingDistance -> let
+          minDistance = if List.length lContour == 1 ||
+                           List.length rContour == 1 then
+                               leafDistance
+                             else
+                               subtreeDistance
+        in
+          separatingDistance + minDistance
       Nothing -> 0
 
 
