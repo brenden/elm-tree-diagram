@@ -62,7 +62,8 @@ drawNode n =
 
 
 main : Element
-main = draw { defaultTreeLayout | siblingDistance = 120,
+main = draw { defaultTreeLayout | leafDistance = 110,
+                                  subtreeDistance = 150,
                                   padding = 80 }
        drawNode
        drawLine

@@ -98,7 +98,7 @@ arrow =
 
 
 main : Element
-main = draw { defaultTreeLayout | padding = 60, siblingDistance = 80 }
+main = draw { defaultTreeLayout | padding = 60, leafDistance = 80 }
             drawNode
             drawLine
             redBlackTree
