@@ -1,7 +1,7 @@
 # elm-tree-diagrams
 This is an Elm package for drawing diagrams of trees. For positioning the
 trees, it uses a modified version of the algorithm described in
-[Tidier Drawings of Trees](http://emr.cs.iit.edu/~reingold/tidier-drawings.pdf)
+[Tidier Drawings of Trees](http://emr.cs.iit.edu/~reingold/tidier-drawings.pdf).
 
 ## Usage
 Here's the tree data structure we want to draw:
@@ -33,16 +33,16 @@ drawNode n =
 Then we define a function for drawing the edges between nodes.
 
 ```elm
-drawLine from to = segment from to |> traced (solid black)
+drawEdge from to = segment from to |> traced (solid black)
 ```
 
 Finally we call TreeDiagram.draw with our tree, node drawer, and edge drawer:
 
 ```elm
-main = draw defaultTreeLayout drawNode drawLine coolTree
+main = draw defaultTreeLayout drawNode drawEdge coolTree
 ```
 
-The argument defaultTreeLayout contains some options for configuring the
+The argument `defaultTreeLayout` contains some options for configuring the
 layout of the tree. See the API section below for more details.
 
 ## Examples
