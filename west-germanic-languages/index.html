@@ -6124,6 +6124,10 @@ Elm.Main.make = function (_elm) {
            "Old High German",
            _U.list([A2($TreeLayout.Tree,"Middle High German",_U.list([A2($TreeLayout.Tree,"German",_U.list([]))]))
                    ,A2($TreeLayout.Tree,"Old Yiddish",_U.list([A2($TreeLayout.Tree,"Yiddish",_U.list([]))]))]))]))]));
-   var main = A4($TreeLayout.draw,_U.update($TreeLayout.defaultTreeLayout,{leafDistance: 120,padding: 80}),drawNode,drawLine,westGermanicLanguages);
+   var main = A4($TreeLayout.draw,
+   _U.update($TreeLayout.defaultTreeLayout,{leafDistance: 110,subtreeDistance: 150,padding: 80}),
+   drawNode,
+   drawLine,
+   westGermanicLanguages);
    return _elm.Main.values = {_op: _op,westGermanicLanguages: westGermanicLanguages,drawLine: drawLine,drawNode: drawNode,main: main};
 };</script></head><body><script type="text/javascript">Elm.fullscreen(Elm.Main)</script></body></html>
