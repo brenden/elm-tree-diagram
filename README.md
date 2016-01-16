@@ -7,16 +7,15 @@ trees, it uses a modified version of the algorithm described in
 Here's the tree data structure we want to draw:
 
 ```elm
-coolTree =
-  Tree 1 [
-    Tree 2 [],
-    Tree 3 [],
-    Tree 4 [
-      Tree 5 [],
-      Tree 6 [],
-      Tree 7 []
-    ]
-  ]
+coolTree = Tree 1 [
+             Tree 2 [],
+             Tree 3 [],
+             Tree 4 [
+               Tree 5 [],
+               Tree 6 [],
+               Tree 7 []
+             ]
+           ]
 ```
 
 We first define a function for drawing the tree nodes, which in this case each
