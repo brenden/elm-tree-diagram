@@ -1,4 +1,4 @@
-# elm-tree-diagrams
+# elm-tree-diagram
 This is an Elm package for drawing diagrams of trees. For positioning the
 trees, it uses a modified version of the algorithm described in
 [Tidier Drawings of Trees](http://emr.cs.iit.edu/~reingold/tidier-drawings.pdf).
@@ -8,13 +8,13 @@ Here's the tree data structure we want to draw:
 
 ```elm
 coolTree = 
-  Node 1 [
-    Node 2 [],
-    Node 3 [],
-    Node 4 [
-      Node 5 [],
-      Node 6 [],
-      Node 7 []
+  node 1 [
+    node 2 [],
+    node 3 [],
+    node 4 [
+      node 5 [],
+      node 6 [],
+      node 7 []
     ]
   ]
 ```
@@ -108,7 +108,7 @@ Possible orientations of the tree from root to leaves.
 ---
 ```elm
 defaultTreeLayout = {
-  orientation = TopToBottom,
+  orientation = topToBottom,
   levelHeight = 100,
   leafDistance = 50,
   subtreeDistance = 80,
