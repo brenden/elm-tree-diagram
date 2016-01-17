@@ -44,15 +44,15 @@ main = draw defaultTreeLayout drawNode drawEdge coolTree
 
 This should produce the diagram below.
 
-![Output of usage example](http://brenden.github.io/elm-tree-layout/example-tree-diagram.png)
+![Output of usage example](http://brenden.github.io/elm-tree-diagram/example-tree-diagram.png)
 
 The argument `defaultTreeLayout` contains some options for configuring the
 layout of the tree. See the API section below for more details.
 
 ## Examples
-  * [Basic Usage](http://brenden.github.io/elm-tree-layout/basic) ([source](https://github.com/brenden/elm-tree-layout/blob/master/examples/Basic.elm))
-  * [West Germanic Languages](http://brenden.github.io/elm-tree-layout/west-germanic-languages) ([source](https://github.com/brenden/elm-tree-layout/blob/master/examples/WestGermanicLanguages.elm))
-  * [Red-Black Tree](http://brenden.github.io/elm-tree-layout/red-black-tree) ([source](https://github.com/brenden/elm-tree-layout/blob/master/examples/RedBlackTree.elm))
+  * [Basic Usage](http://brenden.github.io/elm-tree-diagram/basic) ([source](https://github.com/brenden/elm-tree-layout/blob/master/examples/Basic.elm))
+  * [West Germanic Languages](http://brenden.github.io/elm-tree-diagram/west-germanic-languages) ([source](https://github.com/brenden/elm-tree-layout/blob/master/examples/WestGermanicLanguages.elm))
+  * [Red-Black Tree](http://brenden.github.io/elm-tree-diagram/red-black-tree) ([source](https://github.com/brenden/elm-tree-layout/blob/master/examples/RedBlackTree.elm))
 
 ## API
 ```elm
