@@ -49,9 +49,9 @@ The argument `defaultTreeLayout` contains some options for configuring the
 layout of the tree. See the API section below for more details.
 
 ## Examples
-  * [Basic Usage](http://brenden.github.io/elm-tree-diagram/basic) ([source](https://github.com/brenden/elm-tree-layout/blob/master/examples/Basic.elm))
-  * [West Germanic Languages](http://brenden.github.io/elm-tree-diagram/west-germanic-languages) ([source](https://github.com/brenden/elm-tree-layout/blob/master/examples/WestGermanicLanguages.elm))
-  * [Red-Black Tree](http://brenden.github.io/elm-tree-diagram/red-black-tree) ([source](https://github.com/brenden/elm-tree-layout/blob/master/examples/RedBlackTree.elm))
+  * [Basic Usage](http://brenden.github.io/elm-tree-diagram/basic) ([source](https://github.com/brenden/elm-tree-diagram/blob/master/examples/Basic.elm))
+  * [West Germanic Languages](http://brenden.github.io/elm-tree-diagram/west-germanic-languages) ([source](https://github.com/brenden/elm-tree-diagram/blob/master/examples/WestGermanicLanguages.elm))
+  * [Red-Black Tree](http://brenden.github.io/elm-tree-diagram/red-black-tree) ([source](https://github.com/brenden/elm-tree-diagram/blob/master/examples/RedBlackTree.elm))
 
 ## API
 ```elm
