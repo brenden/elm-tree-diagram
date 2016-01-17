@@ -62,9 +62,9 @@ Draws the tree using the provided functions for drawings nodes and edges.
 
 ---
 ```elm
-type Tree a = Node a (List (Tree a))
+node : a -> List (Tree a) -> Tree a
 ```
-Representation of a tree.
+Creates a tree from a node value and a list of subtrees.
 
 ---
 ```elm
@@ -88,19 +88,22 @@ type alias TreeLayout = {
   padding : Int }
 ```
 Options for laying out the tree:
-  * orientation: e.g. TopToBottom, LeftToRight, etc.
+  * orientation: direction of the tree from root to leaves.
   * levelHeight: vertical distance between parent and child nodes.
-  * subtreeDistance: horizontal distance to leave between subtrees.
-  * siblingDistance: horizontal distance to leave between siblings. This is
-    usually set below `subtreeDistance` to produce a clearer distinction
-    between sibling nodes and non-siblings on the same level of the tree.
+  * subtreeDistance: horizontal distance between subtrees.
+  * siblingDistance: horizontal distance between siblings. This is usually set
+    below `subtreeDistance` to produce a clearer distinction between sibling
+    nodes and non-siblings on the same level of the tree.
   * padding: amount of space to leave around the edges of the diagram.
 
 ---
 ```elm
-type TreeOrientation = LeftToRight | RightToLeft | TopToBottom | BottomToTop
+leftToRight : TreeOrientation
+rightToLeft : TreeOrientation
+topToBottom : TreeOrientation
+bottomToTop : TreeOrientation
 ```
-Direction of the tree from root to leaves.
+Possible orientations of the tree from root to leaves.
 
 ---
 ```elm
@@ -111,6 +114,6 @@ defaultTreeLayout = {
   subtreeDistance = 80,
   padding = 40 }
 ```
-A convenient default TreeLayout.
+A set of default values that should be modified to create your TreeLayout.
 
 ## Future work
