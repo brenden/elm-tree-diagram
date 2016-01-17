@@ -44,8 +44,8 @@ redBlackTree =
 
 {-| Represent edges as arrows from parent to child
 -}
-drawLine : (Float, Float) -> (Float, Float) -> Form
-drawLine (x0, y0) (x1, y1) = let
+drawEdge : (Float, Float) -> (Float, Float) -> Form
+drawEdge (x0, y0) (x1, y1) = let
     arrowOffset = 42
     xd = x1 - x0
     yd = y1 - y0
@@ -98,7 +98,7 @@ arrow =
 
 
 main : Element
-main = draw { defaultTreeLayout | padding = 60, leafDistance = 80 }
+main = draw { defaultTreeLayout | padding = 60, siblingDistance = 80 }
             drawNode
-            drawLine
+            drawEdge
             redBlackTree

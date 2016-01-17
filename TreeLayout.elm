@@ -1,7 +1,10 @@
 module TreeLayout (
   draw,
   Tree(Tree),
+  NodeDrawer,
+  EdgeDrawer,
   TreeOrientation(..),
+  TreeLayout,
   defaultTreeLayout) where
 
 import Graphics.Collage exposing (..)
@@ -13,7 +16,7 @@ type TreeOrientation = LeftToRight | RightToLeft | TopToBottom | BottomToTop
 type alias Coord = (Float, Float)
 type alias Contour = List (Int, Int)
 type alias NodeDrawer a = a -> Form
-type alias LineDrawer = Coord -> Coord -> Form
+type alias EdgeDrawer = Coord -> Coord -> Form
 type alias CoordTransform = Coord -> Coord
 type alias PositionedTree a = Tree (a, Coord)
 type alias PrelimPosition = {
@@ -24,14 +27,14 @@ type alias PrelimPosition = {
 type alias TreeLayout = {
   orientation : TreeOrientation,
   levelHeight : Int,
-  leafDistance: Int,
+  siblingDistance: Int,
   subtreeDistance: Int,
   padding : Int }
 
 defaultTreeLayout = {
   orientation = TopToBottom,
   levelHeight = 100,
-  leafDistance = 50,
+  siblingDistance = 50,
   subtreeDistance = 80,
   padding = 40 }
 
@@ -42,10 +45,10 @@ defaultTreeLayout = {
     layout for the tree and uses the provided drawing functions to create a
     visual representation of the tree.
 -}
-draw : TreeLayout -> NodeDrawer a -> LineDrawer -> Tree a -> Element
+draw : TreeLayout -> NodeDrawer a -> EdgeDrawer -> Tree a -> Element
 draw layout drawNode drawLine tree =
   let
-    positionedTree = position layout.leafDistance
+    positionedTree = position layout.siblingDistance
                               layout.subtreeDistance
                               layout.levelHeight
                               layout.orientation
@@ -59,8 +62,8 @@ draw layout drawNode drawLine tree =
     the dimensions the tree occupied by the positioned tree.
 -}
 position : Int -> Int -> Int -> TreeOrientation -> Tree a -> PositionedTree a
-position leafDistance subtreeDistance levelHeight layout tree = let
-    (prelimTree, _) = prelim leafDistance subtreeDistance tree
+position siblingDistance subtreeDistance levelHeight layout tree = let
+    (prelimTree, _) = prelim siblingDistance subtreeDistance tree
     finalTree = final 0 levelHeight 0 prelimTree
     (width, height) = treeBoundingBox finalTree
     transform = (\ (x, y) -> case layout of
@@ -81,7 +84,7 @@ position leafDistance subtreeDistance levelHeight layout tree = let
 -}
 drawPositioned : Int
               -> NodeDrawer a
-              -> LineDrawer
+              -> EdgeDrawer
               -> PositionedTree a
               -> Element
 drawPositioned padding drawNode drawLine positionedTree = let
@@ -122,7 +125,7 @@ treeExtrema (Tree (_, (x, y)) subtrees) = let
 {-| Helper function for recursively drawing the tree.
 -}
 drawInternal : NodeDrawer a
-            -> LineDrawer
+            -> EdgeDrawer
             -> PositionedTree a
             -> List Form
 drawInternal drawNode
@@ -177,16 +180,16 @@ final level
     positioned so that they're centered over their children.
 -}
 prelim : Int -> Int -> Tree a -> (Tree (a, PrelimPosition), Contour)
-prelim leafDistance subtreeDistance (Tree val children) = let
+prelim siblingDistance subtreeDistance (Tree val children) = let
 
     -- Traverse each of the subtrees, getting the positioned subtree as well as
     -- a description of its contours.
-    visited = List.map (prelim leafDistance subtreeDistance) children
+    visited = List.map (prelim siblingDistance subtreeDistance) children
     (subtrees, childContours) = List.unzip visited
 
     -- Calculate the position of the left bound of each subtree, relative to
     -- the left bound of the current tree.
-    offsets = subtreeOffsets leafDistance subtreeDistance childContours
+    offsets = subtreeOffsets siblingDistance subtreeDistance childContours
 
     -- Store the offset for each of the subtrees.
     updatedChildren = List.map2
@@ -242,12 +245,12 @@ rootOffset lPrelimPosition rPrelimPosition =
     exactly `subtreeDistance` away from its neighbors.
 -}
 subtreeOffsets : Int -> Int -> List Contour -> List Int
-subtreeOffsets leafDistance subtreeDistance contours =
+subtreeOffsets siblingDistance subtreeDistance contours =
   case List.head contours of
     Just c0 -> let
       cumulativeContours = List.scanl
         (\ c (aggContour, _) -> let
-            offset = pairwiseSubtreeOffset leafDistance
+            offset = pairwiseSubtreeOffset siblingDistance
                                            subtreeDistance
                                            aggContour
                                            c
@@ -264,7 +267,7 @@ subtreeOffsets leafDistance subtreeDistance contours =
     of the first such that the two are separated by exactly `minDistance`.
 -}
 pairwiseSubtreeOffset : Int -> Int -> Contour -> Contour -> Int
-pairwiseSubtreeOffset leafDistance subtreeDistance lContour rContour = let
+pairwiseSubtreeOffset siblingDistance subtreeDistance lContour rContour = let
     levelDistances = List.map2 (\ (_, lTo) (rFrom, _) -> lTo - rFrom)
                                lContour
                                rContour
@@ -273,7 +276,7 @@ pairwiseSubtreeOffset leafDistance subtreeDistance lContour rContour = let
       Just separatingDistance -> let
           minDistance = if List.length lContour == 1 ||
                            List.length rContour == 1 then
-                               leafDistance
+                               siblingDistance
                              else
                                subtreeDistance
         in

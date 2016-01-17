@@ -49,8 +49,8 @@ westGermanicLanguages =
 
 {-| Represent edges as straight lines.
 -}
-drawLine : (Float, Float) -> (Float, Float) -> Form
-drawLine from to = segment from to |> traced (solid black)
+drawEdge : (Float, Float) -> (Float, Float) -> Form
+drawEdge from to = segment from to |> traced (solid black)
 
 
 {-| Represent nodes as white textboxes
@@ -62,9 +62,9 @@ drawNode n =
 
 
 main : Element
-main = draw { defaultTreeLayout | leafDistance = 110,
+main = draw { defaultTreeLayout | siblingDistance = 110,
                                   subtreeDistance = 150,
                                   padding = 80 }
        drawNode
-       drawLine
+       drawEdge
        westGermanicLanguages

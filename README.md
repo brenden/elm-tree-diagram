@@ -55,5 +55,56 @@ layout of the tree. See the API section below for more details.
   * [Red-Black Tree](http://brenden.github.io/elm-tree-layout/red-black-tree) ([source](https://github.com/brenden/elm-tree-layout/blob/master/examples/RedBlackTree.elm))
 
 ## API
+```elm
+draw : TreeLayout -> NodeDrawer a -> EdgeDrawer -> Tree a -> Element
+```
+Draws the tree using the provided functions for drawings nodes and edges.
+
+```elm
+type Tree a = Tree a (List (Tree a))
+```
+Representation of a tree.
+
+```elm
+type alias NodeDrawer a = a -> Form
+```
+Alias for functions that draw nodes.
+
+```elm
+type alias EdgeDrawer = (Float, Float) -> (Float, Float) -> Form
+```
+Alias for functions that draw edges between nodes.
+
+```elm
+type alias TreeLayout = {
+  orientation : TreeOrientation,
+  levelHeight : Int,
+  subtreeDistance: Int,
+  siblingDistance: Int,
+  padding : Int }
+```
+Options for laying out the tree.
+  * orientation: e.g. TopToBottom, LeftToRight, etc.
+  * levelHeight: vertical distance between parent and child nodes.
+  * subtreeDistance: horizontal distance to leave between subtrees.
+  * siblingDistance: horizontal distance to leave between siblings. This is
+    usually set below `subtreeDistance` to produce a clearer distinction
+    between sibling nodes and non-siblings on the same level of the tree.
+  * padding: amount of space to leave around the edges of the diagram.
+
+```elm
+type TreeOrientation = LeftToRight | RightToLeft | TopToBottom | BottomToTop
+```
+Direction of the tree from root to leaves.
+
+```elm
+defaultTreeLayout = {
+  orientation = TopToBottom,
+  levelHeight = 100,
+  leafDistance = 50,
+  subtreeDistance = 80,
+  padding = 40 }
+```
+A convenient default TreeLayout.
 
 ## Future work
