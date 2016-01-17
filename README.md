@@ -1,7 +1,6 @@
 # elm-tree-diagram
 This is an Elm package for drawing diagrams of trees. For positioning the
-trees, it uses a modified version of the algorithm described in
-[Tidier Drawings of Trees](http://emr.cs.iit.edu/~reingold/tidier-drawings.pdf).
+trees it uses the approach described in [Tidier Drawings of Trees](http://emr.cs.iit.edu/~reingold/tidier-drawings.pdf).
 
 ## Usage
 Here's the tree data structure we want to draw:
