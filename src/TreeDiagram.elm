@@ -1,4 +1,4 @@
-module TreeLayout (
+module TreeDiagram (
   draw,
   Tree(Node),
   NodeDrawer,

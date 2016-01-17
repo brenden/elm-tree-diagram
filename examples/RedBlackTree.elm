@@ -3,7 +3,7 @@ import Graphics.Collage exposing (..)
 import Graphics.Element exposing (..)
 import Text exposing (..)
 
-import TreeLayout exposing (draw, Tree(..), defaultTreeLayout)
+import TreeDiagram exposing (draw, Tree(..), defaultTreeLayout)
 
 type Color = Red | Black
 

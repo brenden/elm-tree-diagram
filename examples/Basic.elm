@@ -4,7 +4,7 @@ import Graphics.Element exposing (..)
 import Text exposing (..)
 import String
 
-import TreeLayout exposing (draw, Tree(..), defaultTreeLayout)
+import TreeDiagram exposing (draw, Tree(..), defaultTreeLayout)
 
 -- Tree to draw
 coolTree =

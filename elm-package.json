@@ -4,7 +4,7 @@
     "repository": "https://github.com/brenden/elm-tree-diagram.git",
     "license": "BSD3",
     "source-directories": [
-        "."
+        "src"
     ],
     "exposed-modules": [],
     "dependencies": {

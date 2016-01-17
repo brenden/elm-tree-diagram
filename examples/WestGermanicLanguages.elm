@@ -4,7 +4,7 @@ import Graphics.Element exposing (..)
 import String
 import Text
 
-import TreeLayout exposing (draw, Tree(..), defaultTreeLayout)
+import TreeDiagram exposing (draw, Tree(..), defaultTreeLayout)
 
 -- Tree to draw
 westGermanicLanguages =
