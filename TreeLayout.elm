@@ -1,6 +1,6 @@
 module TreeLayout (
   draw,
-  Tree(Tree),
+  Tree(Node),
   NodeDrawer,
   EdgeDrawer,
   TreeOrientation(..),
@@ -10,7 +10,7 @@ module TreeLayout (
 import Graphics.Collage exposing (..)
 import Graphics.Element exposing (..)
 
-type Tree a = Tree a (List (Tree a))
+type Tree a = Node a (List (Tree a))
 type TreeOrientation = LeftToRight | RightToLeft | TopToBottom | BottomToTop
 
 type alias Coord = (Float, Float)
@@ -109,7 +109,7 @@ treeBoundingBox tree = let
 {-| Find the min and max X and Y coordinates in the positioned tree
 -}
 treeExtrema : PositionedTree a -> ((Float, Float), (Float, Float))
-treeExtrema (Tree (_, (x, y)) subtrees) = let
+treeExtrema (Node (_, (x, y)) subtrees) = let
     extrema = List.map treeExtrema subtrees
     (xExtrema, yExtrema) = List.unzip extrema
     (minXs, maxXs) = List.unzip xExtrema
@@ -130,9 +130,9 @@ drawInternal : NodeDrawer a
             -> List Form
 drawInternal drawNode
              drawLine
-             (Tree (v, coord) subtrees) =
+             (Node (v, coord) subtrees) =
   let
-    subtreePositions = List.map (\ (Tree (_, coord) _) -> coord) subtrees
+    subtreePositions = List.map (\ (Node (_, coord) _) -> coord) subtrees
     rootDrawing = drawNode v |> move coord
     edgeDrawings = List.map (drawLine coord) subtreePositions
   in
@@ -153,14 +153,14 @@ final : Int
 final level
       levelHeight
       lOffset
-      (Tree (v, prelimPosition) subtrees) =
+      (Node (v, prelimPosition) subtrees) =
   let
     finalPosition = (toFloat (lOffset + prelimPosition.rootOffset),
                      toFloat (level * levelHeight))
 
     -- Preorder recursal into child trees
     subtreePrelimPositions = List.map
-      (\ (Tree (_, prelimPosition) _) -> prelimPosition)
+      (\ (Node (_, prelimPosition) _) -> prelimPosition)
       subtrees
     visited = List.map2
       (\ prelimPos subtree -> final (level + 1)
@@ -170,7 +170,7 @@ final level
       subtreePrelimPositions
       subtrees
   in
-    Tree (v, finalPosition) visited
+    Node (v, finalPosition) visited
 
 
 {-| Assign the preliminary position of each node within the input tree. The
@@ -180,7 +180,7 @@ final level
     positioned so that they're centered over their children.
 -}
 prelim : Int -> Int -> Tree a -> (Tree (a, PrelimPosition), Contour)
-prelim siblingDistance subtreeDistance (Tree val children) = let
+prelim siblingDistance subtreeDistance (Node val children) = let
 
     -- Traverse each of the subtrees, getting the positioned subtree as well as
     -- a description of its contours.
@@ -193,8 +193,8 @@ prelim siblingDistance subtreeDistance (Tree val children) = let
 
     -- Store the offset for each of the subtrees.
     updatedChildren = List.map2
-      (\ (Tree (v, prelimPosition) children) offset ->
-        Tree (v, { prelimPosition | subtreeOffset = offset }) children)
+      (\ (Node (v, prelimPosition) children) offset ->
+        Node (v, { prelimPosition | subtreeOffset = offset }) children)
       subtrees
       offsets
   in
@@ -203,8 +203,8 @@ prelim siblingDistance subtreeDistance (Tree val children) = let
       -- The root of the current tree has children.
       Just ((lSubtree, lSubtreeContour), (rSubtree, rSubtreeContour)) ->
         let
-          (Tree (_, lPrelimPos) _) = lSubtree
-          (Tree (_, rPrelimPos) _) = rSubtree
+          (Node (_, lPrelimPos) _) = lSubtree
+          (Node (_, rPrelimPos) _) = rSubtree
 
           -- Calculate the position of the root, relative to the left bound of
           -- the current tree. Store this in the preliminary position for the
@@ -220,11 +220,11 @@ prelim siblingDistance subtreeDistance (Tree val children) = let
                                                    rSubtreeContour
                                                    rPrelimPos.subtreeOffset)
         in
-          (Tree (val, prelimPos) updatedChildren, treeContour)
+          (Node (val, prelimPos) updatedChildren, treeContour)
 
       -- The root of the current tree is a leaf node.
       Nothing ->
-        (Tree (val, {subtreeOffset = 0, rootOffset = 0}) updatedChildren,
+        (Node (val, {subtreeOffset = 0, rootOffset = 0}) updatedChildren,
           [(0, 0)])
 
 
@@ -316,4 +316,4 @@ ends list = let
 
 
 treeMap : (a -> a) -> Tree a -> Tree a
-treeMap fn (Tree v children) = Tree (fn v) (List.map (treeMap fn) children)
+treeMap fn (Node v children) = Node (fn v) (List.map (treeMap fn) children)

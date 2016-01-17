@@ -8,39 +8,39 @@ import TreeLayout exposing (draw, Tree(..), defaultTreeLayout)
 
 -- Tree to draw
 westGermanicLanguages =
-  Tree "West Germanic" [
-    Tree "Ingvaeonic" [
-      Tree "Old Saxon" [
-        Tree "Middle Low German" [
-          Tree "Low German" []
+  Node "West Germanic" [
+    Node "Ingvaeonic" [
+      Node "Old Saxon" [
+        Node "Middle Low German" [
+          Node "Low German" []
         ]
       ],
-      Tree "Anglo-Frisian" [
-        Tree "Old English" [
-          Tree "Middle English" [
-            Tree "English" []
+      Node "Anglo-Frisian" [
+        Node "Old English" [
+          Node "Middle English" [
+            Node "English" []
           ]
         ],
-        Tree "Old Frisian" [
-          Tree "Frisian" []
+        Node "Old Frisian" [
+          Node "Frisian" []
         ]
       ]
     ],
-    Tree "Istvaeonic" [
-      Tree "Old Dutch" [
-        Tree "Middle Dutch" [
-          Tree "Dutch" [],
-          Tree "Afrikaans" []
+    Node "Istvaeonic" [
+      Node "Old Dutch" [
+        Node "Middle Dutch" [
+          Node "Dutch" [],
+          Node "Afrikaans" []
         ]
       ]
     ],
-    Tree "Irminonic" [
-      Tree "Old High German" [
-        Tree "Middle High German" [
-          Tree "German" []
+    Node "Irminonic" [
+      Node "Old High German" [
+        Node "Middle High German" [
+          Node "German" []
         ],
-        Tree "Old Yiddish" [
-          Tree "Yiddish" []
+        Node "Old Yiddish" [
+          Node "Yiddish" []
         ]
       ]
     ]

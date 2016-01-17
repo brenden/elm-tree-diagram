@@ -8,30 +8,30 @@ import TreeLayout exposing (draw, Tree(..), defaultTreeLayout)
 
 -- Tree to draw
 coolTree =
-  Tree 61 [
-    Tree 84 [
-      Tree 22 [],
-      Tree 38 []
+  Node 61 [
+    Node 84 [
+      Node 22 [],
+      Node 38 []
     ],
-    Tree 72 [
-      Tree 3 [
-        Tree 59 [],
-        Tree 29 [],
-        Tree 54 []
+    Node 72 [
+      Node 3 [
+        Node 59 [],
+        Node 29 [],
+        Node 54 []
       ],
-      Tree 25 [],
-      Tree 49 []
+      Node 25 [],
+      Node 49 []
     ],
-    Tree 24 [
-      Tree 2 []
+    Node 24 [
+      Node 2 []
     ],
-    Tree 17 [
-      Tree 26 [],
-      Tree 68 [
-        Tree 13 [],
-        Tree 36 []
+    Node 17 [
+      Node 26 [],
+      Node 68 [
+        Node 13 [],
+        Node 36 []
       ],
-      Tree 86 []
+      Node 86 []
     ]
   ]
 

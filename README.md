@@ -8,13 +8,13 @@ Here's the tree data structure we want to draw:
 
 ```elm
 coolTree = 
-  Tree 1 [
-    Tree 2 [],
-    Tree 3 [],
-    Tree 4 [
-      Tree 5 [],
-      Tree 6 [],
-      Tree 7 []
+  Node 1 [
+    Node 2 [],
+    Node 3 [],
+    Node 4 [
+      Node 5 [],
+      Node 6 [],
+      Node 7 []
     ]
   ]
 ```
@@ -62,7 +62,7 @@ Draws the tree using the provided functions for drawings nodes and edges.
 
 ---
 ```elm
-type Tree a = Tree a (List (Tree a))
+type Tree a = Node a (List (Tree a))
 ```
 Representation of a tree.
 
@@ -87,7 +87,7 @@ type alias TreeLayout = {
   siblingDistance: Int,
   padding : Int }
 ```
-Options for laying out the tree.
+Options for laying out the tree:
   * orientation: e.g. TopToBottom, LeftToRight, etc.
   * levelHeight: vertical distance between parent and child nodes.
   * subtreeDistance: horizontal distance to leave between subtrees.

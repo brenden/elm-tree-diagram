@@ -9,33 +9,33 @@ type Color = Red | Black
 
 -- Tree to draw
 redBlackTree =
-  Tree (Just (13, Black)) [
-    Tree (Just (8, Red)) [
-      Tree (Just (1, Black)) [
-        Tree Nothing [],
-        Tree (Just (6, Red)) [
-          Tree Nothing [],
-          Tree Nothing []
+  Node (Just (13, Black)) [
+    Node (Just (8, Red)) [
+      Node (Just (1, Black)) [
+        Node Nothing [],
+        Node (Just (6, Red)) [
+          Node Nothing [],
+          Node Nothing []
         ]
       ],
-      Tree (Just (11, Black)) [
-        Tree Nothing [],
-        Tree Nothing []
+      Node (Just (11, Black)) [
+        Node Nothing [],
+        Node Nothing []
       ]
     ],
-    Tree (Just (17, Red)) [
-      Tree (Just (15, Black)) [
-        Tree Nothing [],
-        Tree Nothing []
+    Node (Just (17, Red)) [
+      Node (Just (15, Black)) [
+        Node Nothing [],
+        Node Nothing []
       ],
-      Tree (Just (25, Black)) [
-        Tree (Just (22, Red)) [
-          Tree Nothing [],
-          Tree Nothing []
+      Node (Just (25, Black)) [
+        Node (Just (22, Red)) [
+          Node Nothing [],
+          Node Nothing []
         ],
-        Tree (Just (27, Red)) [
-          Tree Nothing [],
-          Tree Nothing []
+        Node (Just (27, Red)) [
+          Node Nothing [],
+          Node Nothing []
         ]
       ]
     ]
