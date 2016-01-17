@@ -4,34 +4,34 @@ import Graphics.Element exposing (..)
 import Text exposing (..)
 import String
 
-import TreeDiagram exposing (draw, Tree(..), defaultTreeLayout)
+import TreeDiagram exposing (draw, node, Tree, defaultTreeLayout)
 
 -- Tree to draw
 coolTree =
-  Node 61 [
-    Node 84 [
-      Node 22 [],
-      Node 38 []
+  node 61 [
+    node 84 [
+      node 22 [],
+      node 38 []
     ],
-    Node 72 [
-      Node 3 [
-        Node 59 [],
-        Node 29 [],
-        Node 54 []
+    node 72 [
+      node 3 [
+        node 59 [],
+        node 29 [],
+        node 54 []
       ],
-      Node 25 [],
-      Node 49 []
+      node 25 [],
+      node 49 []
     ],
-    Node 24 [
-      Node 2 []
+    node 24 [
+      node 2 []
     ],
-    Node 17 [
-      Node 26 [],
-      Node 68 [
-        Node 13 [],
-        Node 36 []
+    node 17 [
+      node 26 [],
+      node 68 [
+        node 13 [],
+        node 36 []
       ],
-      Node 86 []
+      node 86 []
     ]
   ]
 

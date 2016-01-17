@@ -4,43 +4,43 @@ import Graphics.Element exposing (..)
 import String
 import Text
 
-import TreeDiagram exposing (draw, Tree(..), defaultTreeLayout)
+import TreeDiagram exposing (draw, node, Tree, defaultTreeLayout)
 
 -- Tree to draw
 westGermanicLanguages =
-  Node "West Germanic" [
-    Node "Ingvaeonic" [
-      Node "Old Saxon" [
-        Node "Middle Low German" [
-          Node "Low German" []
+  node "West Germanic" [
+    node "Ingvaeonic" [
+      node "Old Saxon" [
+        node "Middle Low German" [
+          node "Low German" []
         ]
       ],
-      Node "Anglo-Frisian" [
-        Node "Old English" [
-          Node "Middle English" [
-            Node "English" []
+      node "Anglo-Frisian" [
+        node "Old English" [
+          node "Middle English" [
+            node "English" []
           ]
         ],
-        Node "Old Frisian" [
-          Node "Frisian" []
+        node "Old Frisian" [
+          node "Frisian" []
         ]
       ]
     ],
-    Node "Istvaeonic" [
-      Node "Old Dutch" [
-        Node "Middle Dutch" [
-          Node "Dutch" [],
-          Node "Afrikaans" []
+    node "Istvaeonic" [
+      node "Old Dutch" [
+        node "Middle Dutch" [
+          node "Dutch" [],
+          node "Afrikaans" []
         ]
       ]
     ],
-    Node "Irminonic" [
-      Node "Old High German" [
-        Node "Middle High German" [
-          Node "German" []
+    node "Irminonic" [
+      node "Old High German" [
+        node "Middle High German" [
+          node "German" []
         ],
-        Node "Old Yiddish" [
-          Node "Yiddish" []
+        node "Old Yiddish" [
+          node "Yiddish" []
         ]
       ]
     ]
@@ -65,6 +65,6 @@ main : Element
 main = draw { defaultTreeLayout | siblingDistance = 110,
                                   subtreeDistance = 150,
                                   padding = 80 }
-       drawNode
-       drawEdge
-       westGermanicLanguages
+            drawNode
+            drawEdge
+            westGermanicLanguages

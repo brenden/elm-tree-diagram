@@ -3,39 +3,39 @@ import Graphics.Collage exposing (..)
 import Graphics.Element exposing (..)
 import Text exposing (..)
 
-import TreeDiagram exposing (draw, Tree(..), defaultTreeLayout)
+import TreeDiagram exposing (draw, node, Tree, defaultTreeLayout)
 
 type Color = Red | Black
 
 -- Tree to draw
 redBlackTree =
-  Node (Just (13, Black)) [
-    Node (Just (8, Red)) [
-      Node (Just (1, Black)) [
-        Node Nothing [],
-        Node (Just (6, Red)) [
-          Node Nothing [],
-          Node Nothing []
+  node (Just (13, Black)) [
+    node (Just (8, Red)) [
+      node (Just (1, Black)) [
+        node Nothing [],
+        node (Just (6, Red)) [
+          node Nothing [],
+          node Nothing []
         ]
       ],
-      Node (Just (11, Black)) [
-        Node Nothing [],
-        Node Nothing []
+      node (Just (11, Black)) [
+        node Nothing [],
+        node Nothing []
       ]
     ],
-    Node (Just (17, Red)) [
-      Node (Just (15, Black)) [
-        Node Nothing [],
-        Node Nothing []
+    node (Just (17, Red)) [
+      node (Just (15, Black)) [
+        node Nothing [],
+        node Nothing []
       ],
-      Node (Just (25, Black)) [
-        Node (Just (22, Red)) [
-          Node Nothing [],
-          Node Nothing []
+      node (Just (25, Black)) [
+        node (Just (22, Red)) [
+          node Nothing [],
+          node Nothing []
         ],
-        Node (Just (27, Red)) [
-          Node Nothing [],
-          Node Nothing []
+        node (Just (27, Red)) [
+          node Nothing [],
+          node Nothing []
         ]
       ]
     ]
@@ -86,8 +86,7 @@ treeNodeStyle = { defaultStyle | color = white,
                                  typeface = ["Times New Roman", "serif"] }
 
 -- Text style for the nil leaf nodes
-treeNilStyle = { defaultStyle | color = white,
-                                height = Just 20 }
+treeNilStyle = { defaultStyle | color = white, height = Just 20 }
 
 -- Line style for the tree
 treeLineStyle = { defaultLine | width = 2 }

@@ -1,11 +1,16 @@
 module TreeDiagram (
   draw,
-  Tree(Node),
+  node,
+  Tree,
   NodeDrawer,
   EdgeDrawer,
-  TreeOrientation(..),
   TreeLayout,
-  defaultTreeLayout) where
+  TreeOrientation,
+  defaultTreeLayout,
+  leftToRight,
+  rightToLeft,
+  topToBottom,
+  bottomToTop) where
 
 import Graphics.Collage exposing (..)
 import Graphics.Element exposing (..)
@@ -37,6 +42,12 @@ defaultTreeLayout = {
   siblingDistance = 50,
   subtreeDistance = 80,
   padding = 40 }
+
+
+{-| Function for constructing trees
+-}
+node : a -> List (Tree a) -> Tree a
+node val children = Node val children
 
 
 {-| Public function for drawing a tree.
@@ -303,6 +314,30 @@ buildContour lContour rContour rContourOffset = let
         (List.drop lLength rContour))
 
 
+{-| Left-to-right tree orientation
+-}
+leftToRight : TreeOrientation
+leftToRight = LeftToRight
+
+
+{-| Right-to-left tree orientation
+-}
+rightToLeft : TreeOrientation
+rightToLeft = RightToLeft
+
+
+{-| Top-to-bottom tree orientation
+-}
+topToBottom : TreeOrientation
+topToBottom = TopToBottom
+
+
+{-| Bottom-to-top tree orientation
+-}
+bottomToTop : TreeOrientation
+bottomToTop = BottomToTop
+
+
 {-| Create a tuple containing the first and last elements in a list
 
     ends [1, 2, 3, 4] == (1, 4)
@@ -315,5 +350,7 @@ ends list = let
     Maybe.map2 (\ a b -> (a, b)) first last
 
 
+{-| Apply a function to the value of each node in a tree to produce a new tree.
+-}
 treeMap : (a -> a) -> Tree a -> Tree a
 treeMap fn (Node v children) = Node (fn v) (List.map (treeMap fn) children)
