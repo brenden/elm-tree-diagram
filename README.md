@@ -60,21 +60,25 @@ draw : TreeLayout -> NodeDrawer a -> EdgeDrawer -> Tree a -> Element
 ```
 Draws the tree using the provided functions for drawings nodes and edges.
 
+---
 ```elm
 type Tree a = Tree a (List (Tree a))
 ```
 Representation of a tree.
 
+---
 ```elm
 type alias NodeDrawer a = a -> Form
 ```
 Alias for functions that draw nodes.
 
+---
 ```elm
 type alias EdgeDrawer = (Float, Float) -> (Float, Float) -> Form
 ```
 Alias for functions that draw edges between nodes.
 
+---
 ```elm
 type alias TreeLayout = {
   orientation : TreeOrientation,
@@ -92,11 +96,13 @@ Options for laying out the tree.
     between sibling nodes and non-siblings on the same level of the tree.
   * padding: amount of space to leave around the edges of the diagram.
 
+---
 ```elm
 type TreeOrientation = LeftToRight | RightToLeft | TopToBottom | BottomToTop
 ```
 Direction of the tree from root to leaves.
 
+---
 ```elm
 defaultTreeLayout = {
   orientation = TopToBottom,
