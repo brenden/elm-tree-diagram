@@ -6,16 +6,18 @@ trees it uses the approach described in [Tidier Drawings of Trees](http://emr.cs
 Here's the tree data structure we want to draw:
 
 ```elm
-coolTree = 
-  node 1 [
-    node 2 [],
-    node 3 [],
-    node 4 [
-      node 5 [],
-      node 6 [],
-      node 7 []
-    ]
-  ]
+coolTree =
+    node
+        1
+        [ node 2 []
+        , node 3 []
+        , node
+            4
+            [ node 5 []
+            , node 6 []
+            , node 7 []
+            ]
+        ]
 ```
 
 We first define a function for drawing the tree nodes, which in this case each
@@ -23,22 +25,24 @@ contain an integer. We'll display each node as white text on a black circle.
 
 ```elm
 drawNode n =
-  group [
-    circle 16 |> filled black,
-    toString n |> Text.fromString |> Text.color white |> text
-  ]
+    group
+        [ circle 16 |> filled black
+        , toString n |> Text.fromString |> Text.color white |> text
+        ]
 ```
 
 Then we define a function for drawing the edges between nodes.
 
 ```elm
-drawEdge from to = segment from to |> traced (solid black)
+drawEdge from to =
+    segment from to |> traced (solid black)
 ```
 
 Finally we call TreeDiagram.draw with our tree, node drawer, and edge drawer:
 
 ```elm
-main = draw defaultTreeLayout drawNode drawEdge coolTree
+main =
+    draw defaultTreeLayout drawNode drawEdge coolTree
 ```
 
 This should produce the diagram below.
@@ -79,12 +83,13 @@ Alias for functions that draw edges between nodes.
 
 ---
 ```elm
-type alias TreeLayout = {
-  orientation : TreeOrientation,
-  levelHeight : Int,
-  subtreeDistance: Int,
-  siblingDistance: Int,
-  padding : Int }
+type alias TreeLayout =
+    { orientation : TreeOrientation
+    , levelHeight : Int
+    , subtreeDistance : Int
+    , siblingDistance : Int
+    , padding : Int
+    }
 ```
 Options for laying out the tree:
   * orientation: direction of the tree from root to leaves.
@@ -106,12 +111,13 @@ Possible orientations of the tree from root to leaves.
 
 ---
 ```elm
-defaultTreeLayout = {
-  orientation = topToBottom,
-  levelHeight = 100,
-  leafDistance = 50,
-  subtreeDistance = 80,
-  padding = 40 }
+defaultTreeLayout =
+    { orientation = topToBottom
+    , levelHeight = 100
+    , leafDistance = 50
+    , subtreeDistance = 80
+    , padding = 40
+    }
 ```
 A set of default values that should be modified to create your TreeLayout.
 
