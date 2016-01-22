@@ -1,13 +1,29 @@
 module TreeDiagram (draw, node, Tree, NodeDrawer, EdgeDrawer, TreeLayout, TreeOrientation, defaultTreeLayout, leftToRight, rightToLeft, topToBottom, bottomToTop) where
 
+{-| This library provides functions drawing diagrams of trees.
+
+# Building a tree
+@docs Tree, node
+
+# Drawing a tree
+@docs NodeDrawer, EdgeDrawer, draw
+
+# Tree layout options
+@docs TreeLayout, defaultTreeLayout, TreeOrientation, leftToRight, rightToLeft, bottomToTop, topToBottom
+-}
+
 import Graphics.Collage exposing (..)
 import Graphics.Element exposing (..)
 
 
+{-| A tree data structure
+-}
 type Tree a
     = Node a (List (Tree a))
 
 
+{-| Direction of the tree from root to leaves
+-}
 type TreeOrientation
     = LeftToRight
     | RightToLeft
@@ -23,10 +39,14 @@ type alias Contour =
     List ( Int, Int )
 
 
+{-| Alias for functions that draw nodes
+-}
 type alias NodeDrawer a =
     a -> Form
 
 
+{-| Alias for functions that draw edges between nodes
+-}
 type alias EdgeDrawer =
     Coord -> Coord -> Form
 
@@ -45,10 +65,15 @@ type alias PrelimPosition =
     }
 
 
-
--- Options of laying out the tree
-
-
+{-| Options to be passed to `draw` for laying out the tree:
+  * orientation: direction of the tree from root to leaves.
+  * levelHeight: vertical distance between parent and child nodes.
+  * subtreeDistance: horizontal distance between subtrees.
+  * siblingDistance: horizontal distance between siblings. This is usually set
+    below `subtreeDistance` to produce a clearer distinction between sibling
+    nodes and non-siblings on the same level of the tree.
+  * padding: amount of space to leave around the edges of the diagram.
+-}
 type alias TreeLayout =
     { orientation : TreeOrientation
     , levelHeight : Int
@@ -58,6 +83,9 @@ type alias TreeLayout =
     }
 
 
+{-| A set of default values that should be modified to create your TreeLayout
+-}
+defaultTreeLayout : TreeLayout
 defaultTreeLayout =
     { orientation = TopToBottom
     , levelHeight = 100
@@ -67,18 +95,15 @@ defaultTreeLayout =
     }
 
 
-{-| Function for constructing trees
+{-| Constructs a tree out of a root value and a list of subtrees
 -}
 node : a -> List (Tree a) -> Tree a
 node val children =
     Node val children
 
 
-{-| Public function for drawing a tree.
-    In addition to a few positioning parameters, this function takes a tree, a
-    line drawing function, and a node drawing function. It determines the
-    layout for the tree and uses the provided drawing functions to create a
-    visual representation of the tree.
+{-| Draws the tree using the provided functions for drawings nodes and edges.
+    TreeLayout contains some more options for positioning the tree.
 -}
 draw : TreeLayout -> NodeDrawer a -> EdgeDrawer -> Tree a -> Element
 draw layout drawNode drawLine tree =
