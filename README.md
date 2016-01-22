@@ -122,3 +122,6 @@ defaultTreeLayout =
 A set of default values that should be modified to create your TreeLayout.
 
 ## Future work
+* Add support for drawing trees with labeled edges
+* Add support for trees with varied node sizes
+* Implement some more algorithms for laying out the tree
