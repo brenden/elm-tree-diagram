@@ -1,6 +1,6 @@
 {
     "version": "1.0.0",
-    "summary": "Functions for drawing diagrams of trees",
+    "summary": "Library for drawing diagrams of trees",
     "repository": "https://github.com/brenden/elm-tree-diagram.git",
     "license": "BSD3",
     "source-directories": [
