@@ -1,15 +1,15 @@
-module Main (..) where
+module Main exposing (..)
 
 import Color exposing (..)
-import Graphics.Collage exposing (..)
-import Graphics.Element exposing (..)
+import Collage exposing (..)
+import Element exposing (..)
 import Text exposing (..)
 import TreeDiagram exposing (draw, node, Tree, defaultTreeLayout)
 
 
 type Color
-    = Red
-    | Black
+  = Red
+  | Black
 
 
 
@@ -17,107 +17,114 @@ type Color
 
 
 redBlackTree =
-    node
-        (Just ( 13, Black ))
+  node
+    (Just ( 13, Black ))
+    [ node
+        (Just ( 8, Red ))
         [ node
-            (Just ( 8, Red ))
-            [ node
-                (Just ( 1, Black ))
-                [ node Nothing []
-                , node
-                    (Just ( 6, Red ))
-                    [ node Nothing []
-                    , node Nothing []
-                    ]
-                ]
+            (Just ( 1, Black ))
+            [ node Nothing []
             , node
-                (Just ( 11, Black ))
+                (Just ( 6, Red ))
                 [ node Nothing []
                 , node Nothing []
                 ]
             ]
         , node
-            (Just ( 17, Red ))
+            (Just ( 11, Black ))
+            [ node Nothing []
+            , node Nothing []
+            ]
+        ]
+    , node
+        (Just ( 17, Red ))
+        [ node
+            (Just ( 15, Black ))
+            [ node Nothing []
+            , node Nothing []
+            ]
+        , node
+            (Just ( 25, Black ))
             [ node
-                (Just ( 15, Black ))
+                (Just ( 22, Red ))
                 [ node Nothing []
                 , node Nothing []
                 ]
             , node
-                (Just ( 25, Black ))
-                [ node
-                    (Just ( 22, Red ))
-                    [ node Nothing []
-                    , node Nothing []
-                    ]
-                , node
-                    (Just ( 27, Red ))
-                    [ node Nothing []
-                    , node Nothing []
-                    ]
+                (Just ( 27, Red ))
+                [ node Nothing []
+                , node Nothing []
                 ]
             ]
         ]
+    ]
 
 
 {-| Represent edges as arrows from parent to child
 -}
 drawEdge : ( Float, Float ) -> ( Float, Float ) -> Form
 drawEdge ( x0, y0 ) ( x1, y1 ) =
-    let
-        arrowOffset = 42
+  let
+    arrowOffset =
+      42
 
-        xd = x1 - x0
+    xd =
+      x1 - x0
 
-        yd = y1 - y0
+    yd =
+      y1 - y0
 
-        theta = atan (yd / xd)
+    theta =
+      atan (yd / xd)
 
-        rot =
-            if xd > 0 then
-                theta
-            else
-                pi + theta
+    rot =
+      if xd > 0 then
+        theta
+      else
+        pi + theta
 
-        dist = sqrt (xd ^ 2 + yd ^ 2)
+    dist =
+      sqrt (xd ^ 2 + yd ^ 2)
 
-        scale = (dist - arrowOffset) / dist
+    scale =
+      (dist - arrowOffset) / dist
 
-        to = ( x0 + scale * xd, y0 + scale * yd )
-    in
-        group
-            [ segment ( x0, y0 ) to |> traced treeLineStyle
-            , arrow |> move to |> rotate rot
-            ]
+    to =
+      ( x0 + scale * xd, y0 + scale * yd )
+  in
+    group
+      [ segment ( x0, y0 ) to |> traced treeLineStyle
+      , arrow |> move to |> rotate rot
+      ]
 
 
 {-| Represent nodes as colored circles with the node value inside.
 -}
 drawNode : Maybe ( Int, Color ) -> Form
 drawNode n =
-    case n of
-        Just ( n, c ) ->
-            let
-                color =
-                    case c of
-                        Red ->
-                            red
+  case n of
+    Just ( n, c ) ->
+      let
+        color =
+          case c of
+            Red ->
+              red
 
-                        Black ->
-                            black
-            in
-                group
-                    [ circle 27 |> filled color
-                    , circle 27 |> outlined treeLineStyle
-                    , toString n |> fromString |> style treeNodeStyle |> text |> moveY 4
-                    ]
+            Black ->
+              black
+      in
+        group
+          [ circle 27 |> filled color
+          , circle 27 |> outlined treeLineStyle
+          , toString n |> fromString |> style treeNodeStyle |> text |> moveY 4
+          ]
 
-        Nothing ->
-            group
-                [ rect 50 35 |> filled black
-                , fromString "Nil" |> style treeNilStyle |> text |> moveY 2
-                ]
-                |> moveY 5
+    Nothing ->
+      group
+        [ rect 50 35 |> filled black
+        , fromString "Nil" |> style treeNilStyle |> text |> moveY 2
+        ]
+        |> moveY 5
 
 
 
@@ -125,11 +132,11 @@ drawNode n =
 
 
 treeNodeStyle =
-    { defaultStyle
-        | color = white
-        , height = Just 30
-        , typeface = [ "Times New Roman", "serif" ]
-    }
+  { defaultStyle
+    | color = white
+    , height = Just 30
+    , typeface = [ "Times New Roman", "serif" ]
+  }
 
 
 
@@ -137,7 +144,7 @@ treeNodeStyle =
 
 
 treeNilStyle =
-    { defaultStyle | color = white, height = Just 20 }
+  { defaultStyle | color = white, height = Just 20 }
 
 
 
@@ -145,7 +152,7 @@ treeNilStyle =
 
 
 treeLineStyle =
-    { defaultLine | width = 2 }
+  { defaultLine | width = 2 }
 
 
 
@@ -153,12 +160,12 @@ treeLineStyle =
 
 
 arrow =
-    polygon [ ( -1, 1 ), ( 1, 0 ), ( -1, -1 ), ( -0.5, 0 ) ] |> filled black |> scale 10
+  polygon [ ( -1, 1 ), ( 1, 0 ), ( -1, -1 ), ( -0.5, 0 ) ] |> filled black |> scale 10
 
 
-main : Element
 main =
-    draw
+  Element.toHtml
+    <| draw
         { defaultTreeLayout | padding = 60, siblingDistance = 80 }
         drawNode
         drawEdge
