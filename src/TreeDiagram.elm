@@ -1,12 +1,15 @@
-module TreeDiagram exposing (draw, drawCollage, node, Tree, NodeDrawer, nodeDrawerForCollage, EdgeDrawer, TreeLayout, TreeOrientation, defaultTreeLayout, leftToRight, rightToLeft, topToBottom, bottomToTop)
+module TreeDiagram exposing (CanvasNode, CanvasEdge, drawCollage, SvgNode, SvgEdge, drawSvg, node, Tree, TreeLayout, TreeOrientation, defaultTreeLayout, leftToRight, rightToLeft, topToBottom, bottomToTop)
 
 {-| This library provides functions drawing diagrams of trees.
 
 # Building a tree
 @docs Tree, node
 
-# Drawing a tree
-@docs NodeDrawer, EdgeDrawer, draw, drawCollage, nodeDrawerForCollage
+# Drawing a tree using cavas
+@docs CanvasNode, CanvasEdge, drawCollage
+
+# Drawing a tree using SVG
+@docs SvgNode, SvgEdge, drawSvg
 
 # Tree layout options
 @docs TreeLayout, defaultTreeLayout, TreeOrientation, leftToRight, rightToLeft, bottomToTop, topToBottom
@@ -16,7 +19,8 @@ import Collage exposing (..)
 import Element exposing (..)
 import Text
 import VirtualDom
-import Svg exposing (..)
+import Svg exposing (Svg)
+import Svg.Attributes as SA
 
 
 {-| A tree data structure
@@ -47,6 +51,30 @@ type alias Contour =
 type NodeDrawer a msg
   = CanvasNodeDrawer (a -> Form)
   | SvgNodeDrawer (a -> Svg msg)
+
+
+{-| Alias for functions that draw nodes using Canvas
+-}
+type alias CanvasNode a =
+  a -> Form
+
+
+{-| Alias for functions that draw edges using Canvas
+-}
+type alias CanvasEdge =
+  Coord -> Coord -> Form
+
+
+{-| Alias for functions that draw nodes using SVG
+-}
+type alias SvgNode a b =
+  a -> Svg b
+
+
+{-| Alias for functions that draw edges using SVG
+-}
+type alias SvgEdge b =
+  Coord -> Coord -> Svg b
 
 
 {-| Type for functions that draw edges between nodes
@@ -107,27 +135,22 @@ node val children =
   Node val children
 
 
-{-| Creates a drawer from a function receiving a single node argument and returning a Form
+{-| Draws the tree using the provided functions for drawings nodes and edges.
+    TreeLayout contains some more options for positioning the tree.
+    Returns a Canvas Element
 -}
-nodeDrawerForCollage : (a -> Form) -> NodeDrawer a b
-nodeDrawerForCollage drawer =
-  CanvasNodeDrawer drawer
-
-
-{-| Creates a drawer from a function receiving two coordinates as arguments and returning a Form
--}
-edgeDrawerForCollage : (Coord -> Coord -> Form) -> EdgeDrawer a
-edgeDrawerForCollage drawer =
-  CanvasEdgeDrawer drawer
+drawCollage : TreeLayout -> CanvasNode a -> CanvasEdge -> Tree a -> VirtualDom.Node b
+drawCollage layout drawNode drawLine tree =
+  draw layout (CanvasNodeDrawer drawNode) (CanvasEdgeDrawer drawLine) tree
 
 
 {-| Draws the tree using the provided functions for drawings nodes and edges.
     TreeLayout contains some more options for positioning the tree.
-    Returns an Canvas Element
+    Returns a Svg
 -}
-drawCollage : TreeLayout -> (a -> Form) -> (Coord -> Coord -> Form) -> Tree a -> VirtualDom.Node b
-drawCollage layout drawNode drawLine tree =
-  draw layout (nodeDrawerForCollage drawNode) (edgeDrawerForCollage drawLine) tree
+drawSvg : TreeLayout -> SvgNode a b -> SvgEdge b -> Tree a -> Svg b
+drawSvg layout drawNode drawLine tree =
+  draw layout (SvgNodeDrawer drawNode) (SvgEdgeDrawer drawLine) tree
 
 
 {-| Draws the tree using the provided functions for drawings nodes and edges.
@@ -194,13 +217,19 @@ drawPositioned padding drawNode drawLine positionedTree =
   let
     ( width, height ) =
       treeBoundingBox positionedTree
+
+    totalWidth =
+      (round width + 2 * padding)
+
+    totalHeight =
+      (round height + 2 * padding)
   in
     case ( drawNode, drawLine ) of
       ( CanvasNodeDrawer nodeDrawer, CanvasEdgeDrawer edgeDrawer ) ->
         Element.toHtml
           <| collage
-              (round width + 2 * padding)
-              (round height + 2 * padding)
+              totalWidth
+              totalHeight
               (drawInternalCollage
                 nodeDrawer
                 edgeDrawer
@@ -208,10 +237,20 @@ drawPositioned padding drawNode drawLine positionedTree =
               )
 
       ( SvgNodeDrawer nodeDrawer, SvgEdgeDrawer edgeDrawer ) ->
-        Debug.crash "Either a canvas or a SVG can be renderd"
+        Svg.svg
+          [ SA.width <| toString totalWidth
+          , SA.height <| toString totalHeight
+          ]
+          (drawInternalSvg
+            totalWidth
+            totalHeight
+            nodeDrawer
+            edgeDrawer
+            positionedTree
+          )
 
       ( _, _ ) ->
-        Debug.crash "Either a canvas or a SVG can be renderd"
+        Debug.crash "Either a canvas or a SVG can be rendered"
 
 
 {-| Finds the smallest box that fits around the positioned tree
@@ -257,11 +296,37 @@ treeExtrema (Node ( _, ( x, y ) ) subtrees) =
     ( ( minX, maxX ), ( minY, maxY ) )
 
 
+{-| Helper function for recursively drawing the tree as a canvas image
+-}
 drawInternalCollage : (a -> Form) -> (Coord -> Coord -> Form) -> PositionedTree a -> List Form
 drawInternalCollage drawNode drawLine tree =
   drawInternal (drawNode >> (flip move)) drawLine tree
 
 
+{-| Helper function for recursively drawing the tree as a SVG image
+-}
+drawInternalSvg : Int -> Int -> SvgNode a b -> SvgEdge b -> PositionedTree a -> List (Svg b)
+drawInternalSvg width height drawNode drawLine tree =
+  let
+    centerX point =
+      point + ((toFloat width) / 2)
+
+    centerY point =
+      (toFloat height) / 2 - point
+
+    nodeDrawer value ( x, y ) =
+      Svg.g
+        [ SA.transform <| "translate(" ++ (toString <| centerX x) ++ " " ++ (toString <| centerY y) ++ ")" ]
+        [ drawNode value ]
+
+    lineDrawer ( x1, y1 ) ( x2, y2 ) =
+      drawLine ( centerX x1, centerY y1 ) ( centerX x2, centerY y2 )
+  in
+    drawInternal nodeDrawer lineDrawer tree
+
+
+{-| Helper function for recursively drawing the tree.
+-}
 drawInternal nodeDrawer drawLine (Node ( v, coord ) subtrees) =
   let
     subtreePositions =
