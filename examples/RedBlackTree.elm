@@ -4,7 +4,7 @@ import Color exposing (..)
 import Collage exposing (..)
 import Element exposing (..)
 import Text exposing (..)
-import TreeDiagram exposing (draw, node, Tree, defaultTreeLayout)
+import TreeDiagram exposing (drawCollage, node, Tree, defaultTreeLayout)
 
 
 type Color
@@ -164,9 +164,8 @@ arrow =
 
 
 main =
-  Element.toHtml
-    <| draw
-        { defaultTreeLayout | padding = 60, siblingDistance = 80 }
-        drawNode
-        drawEdge
-        redBlackTree
+  drawCollage
+    { defaultTreeLayout | padding = 60, siblingDistance = 80 }
+    drawNode
+    drawEdge
+    redBlackTree

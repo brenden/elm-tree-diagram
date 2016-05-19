@@ -5,7 +5,7 @@ import Collage exposing (..)
 import Element exposing (..)
 import String
 import Text
-import TreeDiagram exposing (draw, node, Tree, defaultTreeLayout)
+import TreeDiagram exposing (drawCollage, node, Tree, defaultTreeLayout)
 
 
 -- Tree to draw
@@ -86,13 +86,12 @@ drawNode n =
 
 
 main =
-  Element.toHtml
-    <| draw
-        { defaultTreeLayout
-          | siblingDistance = 110
-          , subtreeDistance = 150
-          , padding = 80
-        }
-        drawNode
-        drawEdge
-        westGermanicLanguages
+  drawCollage
+    { defaultTreeLayout
+      | siblingDistance = 110
+      , subtreeDistance = 150
+      , padding = 80
+    }
+    drawNode
+    drawEdge
+    westGermanicLanguages
