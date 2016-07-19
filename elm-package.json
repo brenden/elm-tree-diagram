@@ -1,7 +1,7 @@
 {
     "version": "2.0.0",
     "summary": "Library for drawing diagrams of trees",
-    "repository": "https://github.com/brenden/elm-tree-diagram.git",
+    "repository": "https://github.com/lorenzo/elm-tree-diagram.git",
     "license": "BSD3",
     "source-directories": [
         "src"
@@ -16,5 +16,5 @@
         "elm-lang/virtual-dom": "1.0.0 <= v < 2.0.0",
         "evancz/elm-graphics": "1.0.0 <= v < 2.0.0"
     },
-    "elm-version": "0.17.0 <= v < 0.18.0"
+    "elm-version": "0.17.1 <= v < 0.18.0"
 }
