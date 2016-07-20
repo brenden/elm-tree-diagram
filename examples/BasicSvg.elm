@@ -1,10 +1,8 @@
 module Main exposing (..)
 
-import Color exposing (..)
-import Collage exposing (..)
-import Element exposing (..)
-import Text exposing (..)
-import TreeDiagram exposing (drawCollage, node, Tree, defaultTreeLayout)
+import Svg exposing (Svg, svg, circle, line, g, text', text)
+import Svg.Attributes exposing (..)
+import TreeDiagram exposing (drawSvg, node, Tree, defaultTreeLayout)
 
 
 -- Tree to draw
@@ -47,23 +45,29 @@ coolTree =
     ]
 
 
+(=>) prop value =
+  prop (toString value)
+
+
 {-| Represent edges as straight lines.
 -}
-drawLine : ( Float, Float ) -> ( Float, Float ) -> Form
-drawLine from to =
-  segment from to |> traced (solid black)
+drawLine : ( Float, Float ) -> ( Float, Float ) -> Svg msg
+drawLine ( sourceX, sourceY ) ( targetX, targetY ) =
+  line
+    [ x1 => sourceX, y1 => sourceY, x2 => targetX, y2 => targetY, stroke "red" ]
+    []
 
 
 {-| Represent nodes as circles with the node value inside.
 -}
-drawNode : Int -> Form
+drawNode : Int -> Svg msg
 drawNode n =
-  group
-    [ circle 16 |> filled white
-    , circle 16 |> outlined defaultLine
-    , toString n |> fromString |> Text.color black |> text
+  g
+    []
+    [ circle [ r "16", stroke "black", fill "white", cx "0", cy "0" ] []
+    , text' [ transform "translate(-8 5)" ] [ text (toString n) ]
     ]
 
 
 main =
-  drawCollage defaultTreeLayout drawNode drawLine coolTree
+  drawSvg defaultTreeLayout drawNode drawLine coolTree
