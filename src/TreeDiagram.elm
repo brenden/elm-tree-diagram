@@ -1,4 +1,4 @@
-module TreeDiagram exposing (draw, node, Tree, NodeDrawer, EdgeDrawer, TreeLayout, TreeOrientation, defaultTreeLayout, leftToRight, rightToLeft, topToBottom, bottomToTop)
+module TreeDiagram exposing (draw, drawForm, node, Tree, NodeDrawer, EdgeDrawer, TreeLayout, TreeOrientation, defaultTreeLayout, leftToRight, rightToLeft, topToBottom, bottomToTop)
 
 {-| This library provides functions drawing diagrams of trees.
 
@@ -6,7 +6,7 @@ module TreeDiagram exposing (draw, node, Tree, NodeDrawer, EdgeDrawer, TreeLayou
 @docs Tree, node
 
 # Drawing a tree
-@docs NodeDrawer, EdgeDrawer, draw
+@docs NodeDrawer, EdgeDrawer, draw, drawForm
 
 # Tree layout options
 @docs TreeLayout, defaultTreeLayout, TreeOrientation, leftToRight, rightToLeft, bottomToTop, topToBottom
@@ -14,7 +14,6 @@ module TreeDiagram exposing (draw, node, Tree, NodeDrawer, EdgeDrawer, TreeLayou
 
 import Collage exposing (..)
 import Element exposing (..)
-
 
 {-| A tree data structure
 -}
@@ -41,15 +40,22 @@ type alias Contour =
 
 {-| Alias for functions that draw nodes
 -}
-type alias NodeDrawer a =
-  a -> Form
+type alias NodeDrawer a fmt =
+  a -> fmt
 
 
 {-| Alias for functions that draw edges between nodes
 -}
-type alias EdgeDrawer =
-  Coord -> Coord -> Form
+type alias EdgeDrawer fmt =
+  Coord -> Coord -> fmt
 
+
+{-| Functions for moving around and composing drawings
+-}
+type alias Drawer fmt out =
+  { move : Coord -> fmt -> fmt
+  , compose : Int -> Int -> List fmt -> out
+  }
 
 type alias CoordTransform =
   Coord -> Coord
@@ -105,8 +111,8 @@ node val children =
 {-| Draws the tree using the provided functions for drawings nodes and edges.
     TreeLayout contains some more options for positioning the tree.
 -}
-draw : TreeLayout -> NodeDrawer a -> EdgeDrawer -> Tree a -> Element
-draw layout drawNode drawLine tree =
+draw : Drawer fmt out -> TreeLayout -> NodeDrawer a fmt -> EdgeDrawer fmt -> Tree a -> out
+draw drawer layout drawNode drawLine tree =
   let
     positionedTree =
       position
@@ -116,7 +122,7 @@ draw layout drawNode drawLine tree =
         layout.orientation
         tree
   in
-    drawPositioned layout.padding drawNode drawLine positionedTree
+    drawPositioned drawer layout.padding drawNode drawLine positionedTree
 
 
 {-| Function for assigning the positions of a tree's nodes.
@@ -155,22 +161,18 @@ position siblingDistance subtreeDistance levelHeight layout tree =
 
 
 {-| Function for drawing an already-positioned tree.
-    This function will probably be used in conjunction with `position`. It is
-    useful in situations where you want to make some ad-hoc changes to the node
-    positions assigned by the position function prior to drawing the tree, or
-    you want to embelish the tree with some extra drawings prior to proceeding
-    with the normal drawing process.
 -}
-drawPositioned : Int -> NodeDrawer a -> EdgeDrawer -> PositionedTree a -> Element
-drawPositioned padding drawNode drawLine positionedTree =
+drawPositioned : Drawer fmt out -> Int -> NodeDrawer a fmt -> EdgeDrawer fmt -> PositionedTree a -> out
+drawPositioned drawer padding drawNode drawLine positionedTree =
   let
     ( width, height ) =
       treeBoundingBox positionedTree
   in
-    collage
+    drawer.compose
       (round width + 2 * padding)
       (round height + 2 * padding)
       (drawInternal
+        drawer
         drawNode
         drawLine
         positionedTree
@@ -222,21 +224,21 @@ treeExtrema (Node ( _, ( x, y ) ) subtrees) =
 
 {-| Helper function for recursively drawing the tree.
 -}
-drawInternal : NodeDrawer a -> EdgeDrawer -> PositionedTree a -> List Form
-drawInternal drawNode drawLine (Node ( v, coord ) subtrees) =
+drawInternal : Drawer fmt out -> NodeDrawer a fmt -> EdgeDrawer fmt -> PositionedTree a -> List fmt
+drawInternal drawer drawNode drawLine (Node ( v, coord ) subtrees) =
   let
     subtreePositions =
       List.map (\(Node ( _, coord ) _) -> coord) subtrees
 
     rootDrawing =
-      drawNode v |> move coord
+      drawNode v |> drawer.move coord
 
     edgeDrawings =
       List.map (drawLine coord) subtreePositions
   in
     List.append
       (List.append edgeDrawings [ rootDrawing ])
-      (List.concatMap (drawInternal drawNode drawLine) subtrees)
+      (List.concatMap (drawInternal drawer drawNode drawLine) subtrees)
 
 
 {-| Assign the final position of each node within the the input tree. The final
@@ -252,7 +254,7 @@ final level levelHeight lOffset (Node ( v, prelimPosition ) subtrees) =
       , toFloat (level * levelHeight)
       )
 
-    -- Preorder recursal into child trees
+    -- Preorder recursion into child trees
     subtreePrelimPositions =
       List.map
         (\(Node ( _, prelimPosition ) _) -> prelimPosition)
@@ -501,3 +503,21 @@ ends list =
 treeMap : (a -> a) -> Tree a -> Tree a
 treeMap fn (Node v children) =
   Node (fn v) (List.map (treeMap fn) children)
+
+
+{-- TODO: move to seperate module -}
+moveForm : Coord -> Form -> Form
+moveForm coord form = move coord form
+
+composeForm : Int -> Int -> List Form -> Element
+composeForm width height forms = collage width height forms
+
+formDrawer : Drawer Form Element
+formDrawer = Drawer moveForm composeForm
+
+{-| Draws the tree using the provided functions for drawings nodes and edges.
+    TreeLayout contains some more options for positioning the tree.
+-}
+drawForm : TreeLayout -> NodeDrawer a Form -> EdgeDrawer Form -> Tree a -> Element
+drawForm layout drawNode drawLine tree =
+    draw formDrawer layout drawNode drawLine tree
