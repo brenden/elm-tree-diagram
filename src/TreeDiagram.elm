@@ -1,4 +1,4 @@
-module TreeDiagram exposing (draw, drawForm, node, Tree, NodeDrawer, EdgeDrawer, TreeLayout, TreeOrientation, defaultTreeLayout, leftToRight, rightToLeft, topToBottom, bottomToTop)
+module TreeDiagram exposing (draw, drawCanvas, drawSvg, node, Tree, NodeDrawer, EdgeDrawer, TreeLayout, TreeOrientation, defaultTreeLayout, leftToRight, rightToLeft, topToBottom, bottomToTop)
 
 {-| This library provides functions drawing diagrams of trees.
 
@@ -6,7 +6,7 @@ module TreeDiagram exposing (draw, drawForm, node, Tree, NodeDrawer, EdgeDrawer,
 @docs Tree, node
 
 # Drawing a tree
-@docs NodeDrawer, EdgeDrawer, draw, drawForm
+@docs NodeDrawer, EdgeDrawer, draw, drawCanvas, drawSvg
 
 # Tree layout options
 @docs TreeLayout, defaultTreeLayout, TreeOrientation, leftToRight, rightToLeft, bottomToTop, topToBottom
@@ -14,6 +14,8 @@ module TreeDiagram exposing (draw, drawForm, node, Tree, NodeDrawer, EdgeDrawer,
 
 import Collage exposing (..)
 import Element exposing (..)
+import Svg exposing (Svg)
+import Svg.Attributes as SA
 
 {-| A tree data structure
 -}
@@ -53,7 +55,7 @@ type alias EdgeDrawer fmt =
 {-| Functions for moving around and composing drawings
 -}
 type alias Drawer fmt out =
-  { move : Coord -> fmt -> fmt
+  { move : Int -> Int -> Coord -> fmt -> fmt
   , compose : Int -> Int -> List fmt -> out
   }
 
@@ -167,11 +169,17 @@ drawPositioned drawer padding drawNode drawLine positionedTree =
   let
     ( width, height ) =
       treeBoundingBox positionedTree
+    totalWidth =
+      (round width + 2 * padding)
+    totalHeight =
+      (round height + 2 * padding)
   in
     drawer.compose
-      (round width + 2 * padding)
-      (round height + 2 * padding)
+      totalWidth
+      totalHeight
       (drawInternal
+        totalWidth
+        totalHeight
         drawer
         drawNode
         drawLine
@@ -224,21 +232,21 @@ treeExtrema (Node ( _, ( x, y ) ) subtrees) =
 
 {-| Helper function for recursively drawing the tree.
 -}
-drawInternal : Drawer fmt out -> NodeDrawer a fmt -> EdgeDrawer fmt -> PositionedTree a -> List fmt
-drawInternal drawer drawNode drawLine (Node ( v, coord ) subtrees) =
+drawInternal : Int -> Int -> Drawer fmt out -> NodeDrawer a fmt -> EdgeDrawer fmt -> PositionedTree a -> List fmt
+drawInternal width height drawer drawNode drawLine (Node ( v, coord ) subtrees) =
   let
     subtreePositions =
       List.map (\(Node ( _, coord ) _) -> coord) subtrees
 
     rootDrawing =
-      drawNode v |> drawer.move coord
+      drawNode v |> drawer.move width height coord
 
     edgeDrawings =
       List.map (drawLine coord) subtreePositions
   in
     List.append
       (List.append edgeDrawings [ rootDrawing ])
-      (List.concatMap (drawInternal drawer drawNode drawLine) subtrees)
+      (List.concatMap (drawInternal width height drawer drawNode drawLine) subtrees)
 
 
 {-| Assign the final position of each node within the the input tree. The final
@@ -506,18 +514,46 @@ treeMap fn (Node v children) =
 
 
 {-- TODO: move to seperate module -}
-moveForm : Coord -> Form -> Form
-moveForm coord form = move coord form
 
-composeForm : Int -> Int -> List Form -> Element
-composeForm width height forms = collage width height forms
+{- Canvas drawings -}
+moveCanvas : Int -> Int -> Coord -> Form -> Form
+moveCanvas width height coord form = move coord form
 
-formDrawer : Drawer Form Element
-formDrawer = Drawer moveForm composeForm
+composeCanvas : Int -> Int -> List Form -> Element
+composeCanvas width height forms = collage width height forms
+
+canvasDrawer : Drawer Form Element
+canvasDrawer = Drawer moveCanvas composeCanvas
 
 {-| Draws the tree using the provided functions for drawings nodes and edges.
     TreeLayout contains some more options for positioning the tree.
 -}
-drawForm : TreeLayout -> NodeDrawer a Form -> EdgeDrawer Form -> Tree a -> Element
-drawForm layout drawNode drawLine tree =
-    draw formDrawer layout drawNode drawLine tree
+drawCanvas : TreeLayout -> NodeDrawer a Form -> EdgeDrawer Form -> Tree a -> Element
+drawCanvas layout drawNode drawLine tree =
+  draw canvasDrawer layout drawNode drawLine tree
+
+{- SVG drawings -}
+moveSvg : Int -> Int -> Coord -> Svg msg -> Svg msg
+moveSvg width height coord svg =
+  let
+    (x, y) = coord
+    centerX = x + ((toFloat width) / 2)
+    centerY = y + ((toFloat height) / 2)
+  in
+    Svg.g
+      [ SA.transform <| "translate(" ++ (toString centerX) ++ " " ++ (toString centerY) ++ ")" ]
+      [ svg ]
+
+composeSvg : Int -> Int -> List (Svg msg) -> Svg msg
+composeSvg width height svgs =
+  Svg.g [] svgs
+
+svgDrawer : Drawer (Svg msg) (Svg msg)
+svgDrawer = Drawer moveSvg composeSvg
+
+{-| Draws the tree using the provided functions for drawings nodes and edges.
+    TreeLayout contains some more options for positioning the tree.
+-}
+drawSvg : TreeLayout -> NodeDrawer a (Svg msg) -> EdgeDrawer (Svg msg) -> Tree a -> Svg msg
+drawSvg layout drawNode drawLine tree =
+  draw svgDrawer layout drawNode drawLine tree
