@@ -4,7 +4,7 @@ import Color exposing (..)
 import Collage exposing (..)
 import Element exposing (..)
 import Text exposing (..)
-import TreeDiagram exposing (drawForm, node, Tree, defaultTreeLayout)
+import TreeDiagram exposing (drawCanvas, node, Tree, defaultTreeLayout)
 
 
 type Color
@@ -165,7 +165,7 @@ arrow =
 
 main =
   Element.toHtml
-    <| drawForm
+    <| drawCanvas
         { defaultTreeLayout | padding = 60, siblingDistance = 80 }
         drawNode
         drawEdge

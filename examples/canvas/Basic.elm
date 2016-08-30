@@ -4,7 +4,7 @@ import Color exposing (..)
 import Collage exposing (..)
 import Element exposing (..)
 import Text exposing (..)
-import TreeDiagram exposing (drawForm, node, Tree, defaultTreeLayout)
+import TreeDiagram exposing (drawCanvas, node, Tree, defaultTreeLayout)
 
 
 -- Tree to draw
@@ -67,4 +67,4 @@ drawNode n =
 
 main =
   Element.toHtml
-    <| drawForm defaultTreeLayout drawNode drawLine coolTree
+    <| drawCanvas defaultTreeLayout drawNode drawLine coolTree
