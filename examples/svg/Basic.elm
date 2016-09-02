@@ -51,10 +51,10 @@ coolTree =
 
 {-| Represent edges as straight lines.
 -}
-drawLine : ( Float, Float ) -> ( Float, Float ) -> Svg msg
-drawLine ( sourceX, sourceY ) ( targetX, targetY ) =
+drawLine : ( Float, Float ) -> Svg msg
+drawLine ( targetX, targetY ) =
   line
-    [ x1 => sourceX, y1 => sourceY, x2 => targetX, y2 => targetY, stroke "red" ]
+    [ x1 => 0, y1 => 0, x2 => targetX, y2 => targetY, stroke "red" ]
     []
 
 
@@ -70,4 +70,4 @@ drawNode n =
 
 
 main =
-  drawSvg defaultTreeLayout drawNode drawLine coolTree
+    drawSvg defaultTreeLayout drawNode drawLine coolTree

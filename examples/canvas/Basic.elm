@@ -49,9 +49,9 @@ coolTree =
 
 {-| Represent edges as straight lines.
 -}
-drawLine : ( Float, Float ) -> ( Float, Float ) -> Form
-drawLine from to =
-  segment from to |> traced (solid black)
+drawLine : ( Float, Float ) -> Form
+drawLine to =
+  segment (0, 0) to |> traced (solid black)
 
 
 {-| Represent nodes as circles with the node value inside.

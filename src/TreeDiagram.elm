@@ -14,6 +14,7 @@ module TreeDiagram exposing (draw, drawCanvas, drawSvg, node, Tree, NodeDrawer, 
 
 import Collage exposing (..)
 import Element exposing (..)
+import Html exposing (Html)
 import Svg exposing (Svg)
 import Svg.Attributes as SA
 
@@ -49,7 +50,7 @@ type alias NodeDrawer a fmt =
 {-| Alias for functions that draw edges between nodes
 -}
 type alias EdgeDrawer fmt =
-  Coord -> Coord -> fmt
+  Coord -> fmt
 
 
 {-| Functions for moving around and composing drawings
@@ -233,16 +234,21 @@ treeExtrema (Node ( _, ( x, y ) ) subtrees) =
 {-| Helper function for recursively drawing the tree.
 -}
 drawInternal : Int -> Int -> Drawer fmt out -> NodeDrawer a fmt -> EdgeDrawer fmt -> PositionedTree a -> List fmt
-drawInternal width height drawer drawNode drawLine (Node ( v, coord ) subtrees) =
+drawInternal width height drawer drawNode drawLine (Node ( v, rootCoord ) subtrees) =
   let
+    (rootX, rootY) = rootCoord
+
     subtreePositions =
       List.map (\(Node ( _, coord ) _) -> coord) subtrees
 
+    subtreeOffsetsFromRoot = List.map (\ (x, y) -> (x - rootX, y - rootY)) subtreePositions
+
     rootDrawing =
-      drawNode v |> drawer.move width height coord
+      drawNode v |> drawer.move width height rootCoord
 
     edgeDrawings =
-      List.map (drawLine coord) subtreePositions
+      List.map (\ coord -> drawLine coord |> drawer.move width height rootCoord)
+               subtreePositions
   in
     List.append
       (List.append edgeDrawings [ rootDrawing ])
@@ -538,7 +544,7 @@ moveSvg width height coord svg =
   let
     (x, y) = coord
     centerX = x + ((toFloat width) / 2)
-    centerY = y + ((toFloat height) / 2)
+    centerY = ((toFloat height) / 2) - y
   in
     Svg.g
       [ SA.transform <| "translate(" ++ (toString centerX) ++ " " ++ (toString centerY) ++ ")" ]
@@ -546,14 +552,17 @@ moveSvg width height coord svg =
 
 composeSvg : Int -> Int -> List (Svg msg) -> Svg msg
 composeSvg width height svgs =
-  Svg.g [] svgs
+  Svg.svg
+    [ SA.width <| toString width
+    , SA.height <| toString height ]
+    [Svg.g [] svgs]
 
-svgDrawer : Drawer (Svg msg) (Svg msg)
+svgDrawer : Drawer (Svg msg) (Html msg)
 svgDrawer = Drawer moveSvg composeSvg
 
 {-| Draws the tree using the provided functions for drawings nodes and edges.
     TreeLayout contains some more options for positioning the tree.
 -}
-drawSvg : TreeLayout -> NodeDrawer a (Svg msg) -> EdgeDrawer (Svg msg) -> Tree a -> Svg msg
+drawSvg : TreeLayout -> NodeDrawer a (Svg msg) -> EdgeDrawer (Svg msg) -> Tree a -> Html msg
 drawSvg layout drawNode drawLine tree =
   draw svgDrawer layout drawNode drawLine tree
