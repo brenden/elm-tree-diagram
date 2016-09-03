@@ -62,38 +62,32 @@ redBlackTree =
 
 {-| Represent edges as arrows from parent to child
 -}
-drawEdge : ( Float, Float ) -> ( Float, Float ) -> Form
-drawEdge ( x0, y0 ) ( x1, y1 ) =
+drawEdge : ( Float, Float ) -> Form
+drawEdge ( x, y ) =
   let
     arrowOffset =
       42
 
-    xd =
-      x1 - x0
-
-    yd =
-      y1 - y0
-
     theta =
-      atan (yd / xd)
+      atan (y / x)
 
     rot =
-      if xd > 0 then
+      if x > 0 then
         theta
       else
         pi + theta
 
     dist =
-      sqrt (xd ^ 2 + yd ^ 2)
+      sqrt (x ^ 2 + y ^ 2)
 
     scale =
       (dist - arrowOffset) / dist
 
     to =
-      ( x0 + scale * xd, y0 + scale * yd )
+      ( scale * x, scale * y )
   in
     group
-      [ segment ( x0, y0 ) to |> traced treeLineStyle
+      [ segment ( 0, 0 ) to |> traced treeLineStyle
       , arrow |> move to |> rotate rot
       ]
 

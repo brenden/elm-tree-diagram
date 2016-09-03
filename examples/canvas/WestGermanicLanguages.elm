@@ -66,11 +66,11 @@ westGermanicLanguages =
     ]
 
 
-{-| Represent edges as straight lines.
+{-| Represent edges as straight lines
 -}
-drawEdge : ( Float, Float ) -> ( Float, Float ) -> Form
-drawEdge from to =
-  segment from to |> traced (solid black)
+drawEdge : ( Float, Float ) -> Form
+drawEdge to =
+  segment (0, 0) to |> traced (solid black)
 
 
 {-| Represent nodes as white textboxes
