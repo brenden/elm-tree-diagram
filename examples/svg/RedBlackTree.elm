@@ -91,7 +91,7 @@ drawEdge ( x, y ) =
     g
       []
       [ line
-          [ x1 => 0, y1 => 0, x2 => xTo, y2 => yTo, stroke "black"]
+          [ x1 => 0, y1 => 0, x2 => xTo, y2 => yTo, stroke "black", strokeWidth "2"]
           []
       , g
           [ transform <| "translate(" ++ (toString xTo) ++ " " ++ (toString yTo) ++ ") " ++
@@ -110,15 +110,25 @@ drawNode n =
         color =
           case c of
             Red ->
-              "red"
+              "#CC0000"
 
             Black ->
               "black"
       in
-        circle [ r "16", stroke "black", fill color, cx "0", cy "0" ] []
+        g
+          []
+          [
+            circle [ r "27", stroke "black", strokeWidth "2", fill color, cx "0", cy "0" ] []
+          , text' [ textAnchor "middle", fill "white", fontSize "30", fontFamily "\"Times New Roman\",serif", transform "translate(0,11)" ] [ text <| toString n ]
+          ]
 
     Nothing ->
-      rect [ width "50", height "40", stroke "black" ] []
+      g
+        []
+        [
+          rect [ width "50", height "35", stroke "black", transform "translate(-25,-22)" ] []
+        , text' [ textAnchor "middle", fill "white", fontSize "20", transform "translate(0,4)", fontFamily "sans-serif" ] [ text "Nil" ]
+        ]
 
 
 -- Arrow to go on the ends of edges
