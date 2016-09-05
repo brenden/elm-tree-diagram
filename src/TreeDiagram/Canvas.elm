@@ -1,5 +1,10 @@
 module TreeDiagram.Canvas exposing (draw)
 
+{-| Provides a draw function for drawing trees as canvas images.
+
+@docs draw
+-}
+
 import Collage exposing (..)
 import Element exposing (..)
 import TreeDiagram exposing (..)

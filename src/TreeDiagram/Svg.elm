@@ -1,5 +1,11 @@
 module TreeDiagram.Svg exposing (draw)
 
+{-| Provides a draw function for drawing trees as SVGs.
+
+@docs draw
+-}
+
+
 import Html exposing (Html)
 import Svg exposing (Svg)
 import Svg.Attributes as SA
