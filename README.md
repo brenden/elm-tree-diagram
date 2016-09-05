@@ -79,7 +79,7 @@ Creates a tree of type `a` from a node value and a list of subtrees.
 
 ---
 ```elm
-type alias NodeDrawer a format = Coord -> format
+type alias NodeDrawer a format = a -> format
 ```
 Alias for functions that draw nodes of type `a` in the given `format` (e.g. `Svg msg` or `Form`).
 
@@ -87,7 +87,7 @@ Alias for functions that draw nodes of type `a` in the given `format` (e.g. `Svg
 ```elm
 type alias EdgeDrawer format = Coord -> format
 ```
-Alias for functions that draw edges between nodes in th given `format`.
+Alias for functions that draw edges between nodes in the given `format`.
 
 ---
 ```elm
