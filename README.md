@@ -27,22 +27,23 @@ contain an integer. We'll display each node as white text on a black circle.
 drawNode n =
     group
         [ circle 16 |> filled black
-        , toString n |> Text.fromString |> Text.color white |> text
+        , toString n |> fromString |> Text.color white |> text
         ]
 ```
 
 Then we define a function for drawing the edges between nodes.
 
 ```elm
-drawEdge from to =
-    segment from to |> traced (solid black)
+drawEdge to =
+    segment (0, 0) to |> traced (solid black)
 ```
 
-Finally we call TreeDiagram.draw with our tree, node drawer, and edge drawer:
+Finally we call draw with our tree, node drawer, and edge drawer:
 
 ```elm
 main =
-    draw defaultTreeLayout drawNode drawEdge coolTree
+    toHtml <|
+        draw defaultTreeLayout drawNode drawEdge coolTree
 ```
 
 This should produce the diagram below.
@@ -58,28 +59,35 @@ layout of the tree. See the API section below for more details.
   * [Red-Black Tree](http://brenden.github.io/elm-tree-diagram/red-black-tree) ([source](https://github.com/brenden/elm-tree-diagram/blob/master/examples/RedBlackTree.elm))
 
 ## API
+### TreeDiagram.Canvas
 ```elm
-draw : TreeLayout -> NodeDrawer a -> EdgeDrawer -> Tree a -> Element
+draw : TreeLayout -> NodeDrawer a Form -> EdgeDrawer Form -> Tree a -> Element
 ```
-Draws the tree using the provided functions for drawings nodes and edges.
+Draws the tree as a canvas image using the provided functions for drawings nodes and edges.
 
----
+### TreeDiagram.Svg
+```elm
+draw : TreeLayout -> NodeDrawer a (Svg msg) -> EdgeDrawer (Svg msg) -> Tree a -> Html msg
+```
+Draws the tree as an SVG using the provided functions for drawings nodes and edges.
+
+### TreeDiagram
 ```elm
 node : a -> List (Tree a) -> Tree a
 ```
-Creates a tree from a node value and a list of subtrees.
+Creates a tree of type `a` from a node value and a list of subtrees.
 
 ---
 ```elm
-type alias NodeDrawer a = a -> Form
+type alias NodeDrawer a format = a -> format
 ```
-Alias for functions that draw nodes.
+Alias for functions that draw nodes of type `a` in the given `format` (e.g. `Svg msg` or `Form`).
 
 ---
 ```elm
-type alias EdgeDrawer = (Float, Float) -> (Float, Float) -> Form
+type alias EdgeDrawer format = Coord -> format
 ```
-Alias for functions that draw edges between nodes.
+Alias for functions that draw edges between nodes in the given `format`.
 
 ---
 ```elm
@@ -114,7 +122,7 @@ Possible orientations of the tree from root to leaves.
 defaultTreeLayout =
     { orientation = topToBottom
     , levelHeight = 100
-    , leafDistance = 50
+    , siblingDistance = 50
     , subtreeDistance = 80
     , padding = 40
     }
