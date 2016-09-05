@@ -2,145 +2,156 @@ module Main exposing (..)
 
 import Svg exposing (Svg, svg, circle, line, polygon, rect, g, text', text)
 import Svg.Attributes exposing (..)
-import TreeDiagram exposing (drawSvg, node, Tree, defaultTreeLayout)
+import TreeDiagram exposing (node, Tree, defaultTreeLayout)
+import TreeDiagram.Svg exposing (draw)
 
 
 type Color
-  = Red
-  | Black
+    = Red
+    | Black
+
 
 
 -- Tree to draw
 
 
 redBlackTree =
-  node
-    (Just ( 13, Black ))
-    [ node
-        (Just ( 8, Red ))
+    node
+        (Just ( 13, Black ))
         [ node
-            (Just ( 1, Black ))
-            [ node Nothing []
-            , node
-                (Just ( 6, Red ))
-                [ node Nothing []
-                , node Nothing []
-                ]
-            ]
-        , node
-            (Just ( 11, Black ))
-            [ node Nothing []
-            , node Nothing []
-            ]
-        ]
-    , node
-        (Just ( 17, Red ))
-        [ node
-            (Just ( 15, Black ))
-            [ node Nothing []
-            , node Nothing []
-            ]
-        , node
-            (Just ( 25, Black ))
+            (Just ( 8, Red ))
             [ node
-                (Just ( 22, Red ))
+                (Just ( 1, Black ))
                 [ node Nothing []
-                , node Nothing []
+                , node
+                    (Just ( 6, Red ))
+                    [ node Nothing []
+                    , node Nothing []
+                    ]
                 ]
             , node
-                (Just ( 27, Red ))
+                (Just ( 11, Black ))
                 [ node Nothing []
                 , node Nothing []
                 ]
             ]
+        , node
+            (Just ( 17, Red ))
+            [ node
+                (Just ( 15, Black ))
+                [ node Nothing []
+                , node Nothing []
+                ]
+            , node
+                (Just ( 25, Black ))
+                [ node
+                    (Just ( 22, Red ))
+                    [ node Nothing []
+                    , node Nothing []
+                    ]
+                , node
+                    (Just ( 27, Red ))
+                    [ node Nothing []
+                    , node Nothing []
+                    ]
+                ]
+            ]
         ]
-    ]
 
-(=>) prop value =      
-  prop (toString value)
+
+(=>) prop value =
+    prop (toString value)
+
 
 {-| Represent edges as arrows from parent to child
 -}
 drawEdge : ( Float, Float ) -> Svg msg
 drawEdge ( x, y ) =
-  let
-    arrowOffset =
-      42
+    let
+        arrowOffset =
+            42
 
-    theta =
-      atan (y / x)
+        theta =
+            atan (y / x)
 
-    rot' =
-      if x > 0 then
-        theta
-      else
-        pi + theta
+        rot' =
+            if x > 0 then
+                theta
+            else
+                pi + theta
 
-    rot =
-      (rot' / (2 * pi)) * 360
+        rot =
+            (rot' / (2 * pi)) * 360
 
-    dist =
-      sqrt (x ^ 2 + y ^ 2)
+        dist =
+            sqrt (x ^ 2 + y ^ 2)
 
-    scale =
-      (dist - arrowOffset) / dist
+        scale =
+            (dist - arrowOffset) / dist
 
-    (xTo, yTo) =
-      ( scale * x, scale * y )
-  in
-    g
-      []
-      [ line
-          [ x1 => 0, y1 => 0, x2 => xTo, y2 => yTo, stroke "black", strokeWidth "2"]
-          []
-      , g
-          [ transform <| "translate(" ++ (toString xTo) ++ " " ++ (toString yTo) ++ ") " ++
-            "rotate(" ++ (toString rot) ++ ")"]
-          [ arrow ]
-      ]
+        ( xTo, yTo ) =
+            ( scale * x, scale * y )
+    in
+        g
+            []
+            [ line
+                [ x1 => 0, y1 => 0, x2 => xTo, y2 => yTo, stroke "black", strokeWidth "2" ]
+                []
+            , g
+                [ transform <|
+                    "translate("
+                        ++ (toString xTo)
+                        ++ " "
+                        ++ (toString yTo)
+                        ++ ") "
+                        ++ "rotate("
+                        ++ (toString rot)
+                        ++ ")"
+                ]
+                [ arrow ]
+            ]
 
 
 {-| Represent nodes as colored circles with the node value inside.
 -}
 drawNode : Maybe ( Int, Color ) -> Svg msg
 drawNode n =
-  case n of
-    Just ( n, c ) ->
-      let
-        color =
-          case c of
-            Red ->
-              "#CC0000"
+    case n of
+        Just ( n, c ) ->
+            let
+                color =
+                    case c of
+                        Red ->
+                            "#CC0000"
 
-            Black ->
-              "black"
-      in
-        g
-          []
-          [
-            circle [ r "27", stroke "black", strokeWidth "2", fill color, cx "0", cy "0" ] []
-          , text' [ textAnchor "middle", fill "white", fontSize "30", fontFamily "\"Times New Roman\",serif", transform "translate(0,11)" ] [ text <| toString n ]
-          ]
+                        Black ->
+                            "black"
+            in
+                g
+                    []
+                    [ circle [ r "27", stroke "black", strokeWidth "2", fill color, cx "0", cy "0" ] []
+                    , text' [ textAnchor "middle", fill "white", fontSize "30", fontFamily "\"Times New Roman\",serif", transform "translate(0,11)" ] [ text <| toString n ]
+                    ]
 
-    Nothing ->
-      g
-        []
-        [
-          rect [ width "50", height "35", stroke "black", transform "translate(-25,-22)" ] []
-        , text' [ textAnchor "middle", fill "white", fontSize "20", transform "translate(0,4)", fontFamily "sans-serif" ] [ text "Nil" ]
-        ]
+        Nothing ->
+            g
+                []
+                [ rect [ width "50", height "35", stroke "black", transform "translate(-25,-22)" ] []
+                , text' [ textAnchor "middle", fill "white", fontSize "20", transform "translate(0,4)", fontFamily "sans-serif" ] [ text "Nil" ]
+                ]
+
 
 
 -- Arrow to go on the ends of edges
 
 
 arrow =
-  polygon [points "-10,10 10,0, -10,-10 -5,0"] []
+    polygon [ points "-10,10 10,0, -10,-10 -5,0" ] []
 
 
 main =
-  drawSvg
-    { defaultTreeLayout | padding = 60, siblingDistance = 80 }
-    drawNode
-    drawEdge
-    redBlackTree
+    draw
+        { defaultTreeLayout | padding = 60, siblingDistance = 80 }
+        drawNode
+        drawEdge
+        redBlackTree
