@@ -122,7 +122,7 @@ Possible orientations of the tree from root to leaves.
 defaultTreeLayout =
     { orientation = topToBottom
     , levelHeight = 100
-    , leafDistance = 50
+    , siblingDistance = 50
     , subtreeDistance = 80
     , padding = 40
     }
