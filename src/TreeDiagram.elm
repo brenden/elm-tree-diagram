@@ -1,4 +1,4 @@
-module TreeDiagram exposing (draw', node, Coord, Drawable, Tree, NodeDrawer, EdgeDrawer, TreeLayout, TreeOrientation, defaultTreeLayout, leftToRight, rightToLeft, topToBottom, bottomToTop)
+module TreeDiagram exposing (draw_, node, Coord, Drawable, Tree, NodeDrawer, EdgeDrawer, TreeLayout, TreeOrientation, defaultTreeLayout, leftToRight, rightToLeft, topToBottom, bottomToTop)
 
 {-| This library provides functions drawing diagrams of trees.
 
@@ -6,7 +6,7 @@ module TreeDiagram exposing (draw', node, Coord, Drawable, Tree, NodeDrawer, Edg
 @docs Tree, node
 
 # Drawing a tree
-@docs Coord, Drawable, NodeDrawer, EdgeDrawer, draw'
+@docs Coord, Drawable, NodeDrawer, EdgeDrawer, draw_
 
 # Tree layout options
 @docs TreeLayout, defaultTreeLayout, TreeOrientation, leftToRight, rightToLeft, bottomToTop, topToBottom
@@ -69,7 +69,7 @@ type alias PrelimPosition =
     }
 
 
-{-| Options to be passed to `draw'` for laying out the tree:
+{-| Options to be passed to `draw_` for laying out the tree:
   * orientation: direction of the tree from root to leaves.
   * levelHeight: vertical distance between parent and child nodes.
   * subtreeDistance: horizontal distance between subtrees.
@@ -109,8 +109,8 @@ node val children =
 {-| Draws the tree using the provided functions for drawings nodes and edges.
     TreeLayout contains some more options for positioning the tree.
 -}
-draw' : Drawable fmt out -> TreeLayout -> NodeDrawer a fmt -> EdgeDrawer fmt -> Tree a -> out
-draw' drawer layout drawNode drawLine tree =
+draw_ : Drawable fmt out -> TreeLayout -> NodeDrawer a fmt -> EdgeDrawer fmt -> Tree a -> out
+draw_ drawer layout drawNode drawLine tree =
     let
         positionedTree =
             position

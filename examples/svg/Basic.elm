@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Svg exposing (Svg, svg, circle, line, g, text', text)
+import Svg exposing (Svg, svg, circle, line, g, text_, text)
 import Svg.Attributes exposing (..)
 import TreeDiagram exposing (node, Tree, defaultTreeLayout)
 import TreeDiagram.Svg exposing (draw)
@@ -66,7 +66,7 @@ drawNode n =
     g
         []
         [ circle [ r "16", stroke "black", fill "white", cx "0", cy "0" ] []
-        , text' [ textAnchor "middle", transform "translate(0,5)" ] [ text (toString n) ]
+        , text_ [ textAnchor "middle", transform "translate(0,5)" ] [ text (toString n) ]
         ]
 
 

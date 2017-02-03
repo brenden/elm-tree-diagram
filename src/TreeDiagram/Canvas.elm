@@ -35,4 +35,4 @@ canvasDrawable =
 -}
 draw : TreeLayout -> NodeDrawer a Form -> EdgeDrawer Form -> Tree a -> Element
 draw layout drawNode drawLine tree =
-    draw' canvasDrawable layout drawNode drawLine tree
+    draw_ canvasDrawable layout drawNode drawLine tree

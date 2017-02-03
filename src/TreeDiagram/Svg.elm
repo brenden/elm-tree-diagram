@@ -5,7 +5,6 @@ module TreeDiagram.Svg exposing (draw)
 @docs draw
 -}
 
-
 import Html exposing (Html)
 import Svg exposing (Svg)
 import Svg.Attributes as SA
@@ -53,4 +52,4 @@ svgDrawable =
 -}
 draw : TreeLayout -> NodeDrawer a (Svg msg) -> EdgeDrawer (Svg msg) -> Tree a -> Html msg
 draw layout drawNode drawLine tree =
-    draw' svgDrawable layout drawNode drawLine tree
+    draw_ svgDrawable layout drawNode drawLine tree

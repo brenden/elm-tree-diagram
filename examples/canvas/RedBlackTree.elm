@@ -1,9 +1,10 @@
-module Main exposing (..)
+module RedBlackTree exposing (main)
 
-import Color exposing (..)
-import Collage exposing (..)
-import Element exposing (..)
-import Text exposing (..)
+import Color exposing (red, black, white)
+import Collage exposing (group, segment, traced, rotate, move, scale, circle, filled, outlined, text, rect, polygon, moveY, defaultLine, Form, LineStyle)
+import Element
+import Html exposing (Html)
+import Text exposing (fromString, style, defaultStyle)
 import TreeDiagram exposing (node, Tree, defaultTreeLayout)
 import TreeDiagram.Canvas exposing (draw)
 
@@ -126,6 +127,7 @@ drawNode n =
 -- Text style for interior nodes
 
 
+treeNodeStyle : Text.Style
 treeNodeStyle =
     { defaultStyle
         | color = white
@@ -138,6 +140,7 @@ treeNodeStyle =
 -- Text style for the nil leaf nodes
 
 
+treeNilStyle : Text.Style
 treeNilStyle =
     { defaultStyle | color = white, height = Just 20 }
 
@@ -146,6 +149,7 @@ treeNilStyle =
 -- Line style for the tree
 
 
+treeLineStyle : LineStyle
 treeLineStyle =
     { defaultLine | width = 2 }
 
@@ -154,10 +158,12 @@ treeLineStyle =
 -- Arrow to go on the ends of edges
 
 
+arrow : Form
 arrow =
     polygon [ ( -1, 1 ), ( 1, 0 ), ( -1, -1 ), ( -0.5, 0 ) ] |> filled black |> scale 10
 
 
+main : Html msg
 main =
     Element.toHtml <|
         draw

@@ -7,7 +7,7 @@ import TreeDiagram exposing (Tree, defaultTreeLayout)
 import TreeDiagram.Svg exposing (draw)
 
 
-node' =
+node_ =
     TreeDiagram.node
 
 
@@ -16,54 +16,54 @@ node' =
 
 
 westGermanicLanguages =
-    node'
+    node_
         "West Germanic"
-        [ node'
+        [ node_
             "Ingvaeonic"
-            [ node'
+            [ node_
                 "Old Saxon"
-                [ node'
+                [ node_
                     "Middle Low German"
-                    [ node' "Low German" []
+                    [ node_ "Low German" []
                     ]
                 ]
-            , node'
+            , node_
                 "Anglo-Frisian"
-                [ node'
+                [ node_
                     "Old English"
-                    [ node'
+                    [ node_
                         "Middle English"
-                        [ node' "English" []
+                        [ node_ "English" []
                         ]
                     ]
-                , node'
+                , node_
                     "Old Frisian"
-                    [ node' "Frisian" []
+                    [ node_ "Frisian" []
                     ]
                 ]
             ]
-        , node'
+        , node_
             "Istvaeonic"
-            [ node'
+            [ node_
                 "Old Dutch"
-                [ node'
+                [ node_
                     "Middle Dutch"
-                    [ node' "Dutch" []
-                    , node' "Afrikaans" []
+                    [ node_ "Dutch" []
+                    , node_ "Afrikaans" []
                     ]
                 ]
             ]
-        , node'
+        , node_
             "Irminonic"
-            [ node'
+            [ node_
                 "Old High German"
-                [ node'
+                [ node_
                     "Middle High German"
-                    [ node' "German" []
+                    [ node_ "German" []
                     ]
-                , node'
+                , node_
                     "Old Yiddish"
-                    [ node' "Yiddish" []
+                    [ node_ "Yiddish" []
                     ]
                 ]
             ]
@@ -90,7 +90,7 @@ drawNode n =
     g
         []
         [ rect [ width => 100, height => 40, fill "white", transform "translate(-50,-20)" ] []
-        , text' [ width => 100, textAnchor "middle" ] [ text n ]
+        , text_ [ width => 100, textAnchor "middle" ] [ text n ]
         ]
 
 

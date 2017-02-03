@@ -1,4 +1,4 @@
-module Main exposing (..)
+module WestGermanicLanguages exposing (..)
 
 import Color exposing (..)
 import Collage exposing (..)
