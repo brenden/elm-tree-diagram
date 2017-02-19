@@ -1,5 +1,5 @@
 {
-    "version": "2.1.0",
+    "version": "3.0.0",
     "summary": "Library for drawing diagrams of trees",
     "repository": "https://github.com/brenden/elm-tree-diagram.git",
     "license": "BSD3",
